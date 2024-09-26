@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Search Task</title>
+    <title>Eye Movement Data Collection & Visual Search Task</title>
     <link rel="stylesheet" href="style.css">
+    <!-- TensorFlow.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <!-- WebGazer for Eye Tracking -->
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <style>
         /* Basic Reset */
@@ -15,7 +17,7 @@
             box-sizing: border-box;
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #ffffff;
+            background-color: #f0f2f5;
             color: #333;
             display: flex;
             flex-direction: column;
@@ -26,7 +28,7 @@
         /* Container */
         .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1200px;
             text-align: center;
             position: relative;
             padding: 20px;
@@ -35,47 +37,103 @@
 
         /* Header Styling */
         header h1 {
-            font-size: 2em;
+            font-size: 2.5em;
             font-weight: 700;
             color: #007BFF;
             margin: 0;
             padding-bottom: 10px;
-            border-bottom: 2px solid #61dafb;
+            border-bottom: 3px solid #61dafb;
         }
 
-        /* Task Styling */
-        #task-container {
+        /* Central Camera Frame */
+        #camera-frame {
+            position: relative;
+            margin: 20px auto;
+            width: 250px;
+            height: 250px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 4px solid #61dafb;
+            background-color: #ffffff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+        }
+
+        #webcamVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Image Frame */
+        #image-frame-container {
             margin: 20px 0;
             display: flex;
             justify-content: center;
             align-items: center;
             width: 100%;
+        }
+
+        #image-frame {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        #demoImage {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Task Container */
+        #task-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
             flex-wrap: wrap;
+            gap: 10px;
         }
 
         .ring {
-            width: 50px;
-            height: 50px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
-            border: 2px solid black;
+            border: 3px solid black;
             display: flex;
             justify-content: center;
             align-items: center;
             font-size: 1.5em;
-            margin: 5px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
+        }
+
+        .ring:hover {
+            transform: scale(1.1);
         }
 
         .target-ring-upward {
-            border-color: red; /* Pop-out target in red */
-            font-size: 2em; /* Make it visually distinctive */
+            border-color: red;
+            font-size: 2em;
+        }
+
+        .distractor-ring {
+            border-color: black;
+        }
+
+        .target-ring-color {
+            border-color: red;
+            background-color: #ffcccc;
         }
 
         /* Calibration Message */
         #calibrationMessage {
             margin-top: 10px;
-            color: #61dafb;
+            color: #007BFF;
             font-size: 1.5em;
-            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
         }
 
         /* Footer Styling */
@@ -83,13 +141,55 @@
             width: 100%;
             background: #ffffff;
             color: #777;
-            padding: 10px;
-            border-radius: 0 0 15px 15px;
-            font-size: 0.9em;
+            padding: 15px;
+            border-radius: 0 0 20px 20px;
+            font-size: 1em;
             text-align: center;
-            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
             position: relative;
             margin-top: auto;
+        }
+
+        /* Start Button */
+        #startButton {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        #startButton:hover {
+            background-color: #218838;
+        }
+
+        /* Trial Information */
+        #trialInfo {
+            margin-top: 15px;
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .ring {
+                width: 40px;
+                height: 40px;
+                font-size: 1em;
+            }
+
+            #camera-frame {
+                width: 200px;
+                height: 200px;
+            }
+
+            #startButton {
+                font-size: 1em;
+                padding: 8px 16px;
+            }
         }
     </style>
 </head>
@@ -97,8 +197,26 @@
 <body>
     <div class="container">
         <header>
-            <h1>Visual Search Task</h1>
+            <h1>Eye Movement Data Collection & Visual Search Task</h1>
         </header>
+
+        <!-- Central Camera Frame -->
+        <div id="camera-frame">
+            <video id="webcamVideo" autoplay playsinline></video>
+        </div>
+
+        <!-- Image Frame (Optional for Visual Memory Tasks) -->
+        <div id="image-frame-container">
+            <div id="image-frame">
+                <img id="demoImage" src="images/image1.jpg" alt="Demo Image">
+            </div>
+        </div>
+
+        <!-- Start Button -->
+        <button id="startButton">Start Task</button>
+
+        <!-- Trial Information -->
+        <div id="trialInfo"></div>
 
         <!-- Task Container -->
         <div id="task-container">
@@ -106,7 +224,7 @@
         </div>
 
         <!-- Calibration Message -->
-        <div id="calibrationMessage">Please identify the target!</div>
+        <div id="calibrationMessage">Press "Start Task" to begin.</div>
     </div>
 
     <footer>
@@ -117,81 +235,204 @@
         document.addEventListener('DOMContentLoaded', function() {
             const taskContainer = document.getElementById('task-container');
             const calibrationMessage = document.getElementById('calibrationMessage');
-            const searchTimeLimit = 60000; // 60 seconds max per trial
-            let currentTask = 'popout'; // Task type: 'serial' or 'popout'
+            const startButton = document.getElementById('startButton');
+            const trialInfo = document.getElementById('trialInfo');
+            const demoImage = document.getElementById('demoImage');
+            const webcamVideo = document.getElementById('webcamVideo');
+
+            const searchTimeLimit = 60000; // 60 seconds per trial
+            const totalTrials = 20; // Total number of trials (10 serial + 10 pop-out)
+            let currentTrial = 0;
+            let trials = [];
+
+            // Configuration based on the research paper
+            const taskTypes = ['serial', 'popout'];
+            const numberOfRingsOptions = [4, 48];
+            const trialsPerCombination = 5; // 5 trials for each combination (2 tasks * 2 ring numbers)
+
+            // Initialize trials
+            for (let task of taskTypes) {
+                for (let numRings of numberOfRingsOptions) {
+                    for (let i = 0; i < trialsPerCombination; i++) {
+                        trials.push({
+                            taskType: task,
+                            numberOfRings: numRings
+                        });
+                    }
+                }
+            }
+
+            // Shuffle trials to randomize the order
+            shuffleArray(trials);
+
+            // Array to store collected gaze data
+            const gazeData = [];
+
             let timer;
+            let trialStartTime;
 
-            // Start the first task
-            startTask();
+            // Start Button Event Listener
+            startButton.addEventListener('click', function() {
+                startButton.style.display = 'none';
+                startCamera()
+                    .then(() => {
+                        calibrationMessage.textContent = 'Camera started. Preparing to start trials...';
+                        setTimeout(startNextTrial, 2000); // Delay before starting
+                    })
+                    .catch(error => {
+                        console.error('Error starting camera:', error);
+                        calibrationMessage.textContent = 'Error: Unable to access camera.';
+                        startButton.style.display = 'block';
+                    });
+            });
 
-            function startTask() {
-                if (currentTask === 'serial') {
-                    createSerialSearch();
-                } else {
-                    createPopoutSearch();
+            // Start the camera
+            async function startCamera() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    webcamVideo.srcObject = stream;
+                    console.log("Camera started");
+                } catch (error) {
+                    throw error;
                 }
             }
 
-            // Create Serial Search Task
-            function createSerialSearch() {
-                taskContainer.innerHTML = '';
-                const targetPosition = Math.floor(Math.random() * 48); // Random target among 48 rings
+            // Stop the camera
+            function stopCamera() {
+                const stream = webcamVideo.srcObject;
+                if (stream) {
+                    const tracks = stream.getTracks();
+                    tracks.forEach(track => track.stop());
+                    webcamVideo.srcObject = null;
+                    console.log("Camera stopped");
+                }
+            }
 
-                for (let i = 0; i < 48; i++) {
-                    const ring = document.createElement('div');
-                    ring.classList.add('ring');
-                    ring.textContent = i === targetPosition ? 'O' : 'C'; // Upward target vs. downward distractors
-                    ring.style.transform = i === targetPosition ? 'rotate(0deg)' : 'rotate(180deg)'; // Target is upright
-
-                    taskContainer.appendChild(ring);
-                    ring.addEventListener('click', onTargetClick.bind(null, i === targetPosition));
+            // Start the next trial
+            function startNextTrial() {
+                if (currentTrial >= trials.length) {
+                    endExperiment();
+                    return;
                 }
 
-                calibrationMessage.textContent = 'Find the upward-facing ring!';
+                const trial = trials[currentTrial];
+                currentTrial++;
+
+                trialInfo.textContent = `Trial ${currentTrial} of ${trials.length}: ${trial.taskType.toUpperCase()} Search with ${trial.numberOfRings} Rings`;
+
+                createSearchTask(trial.taskType, trial.numberOfRings);
+                calibrationMessage.textContent = 'Please find the target as quickly as possible.';
+                trialStartTime = Date.now();
+
                 startTimer();
             }
 
-            // Create Pop-out Search Task
-            function createPopoutSearch() {
+            // Create Search Task
+            function createSearchTask(taskType, numberOfRings) {
                 taskContainer.innerHTML = '';
-                const targetPosition = Math.floor(Math.random() * 48); // Random target among 48 rings
+                const targetPosition = Math.floor(Math.random() * numberOfRings);
 
-                for (let i = 0; i < 48; i++) {
+                for (let i = 0; i < numberOfRings; i++) {
                     const ring = document.createElement('div');
                     ring.classList.add('ring');
-                    ring.classList.add(i === targetPosition ? 'target-ring-upward' : 'distractor-ring');
-                    ring.textContent = 'O'; // Pop-out task is color-based
+
+                    if (taskType === 'serial') {
+                        // Serial Search: Target has upward orientation, distractors downward
+                        if (i === targetPosition) {
+                            ring.classList.add('target-ring-upward');
+                            ring.textContent = 'O'; // Upward
+                            ring.style.transform = 'rotate(0deg)';
+                        } else {
+                            ring.classList.add('distractor-ring');
+                            ring.textContent = 'C'; // Downward
+                            ring.style.transform = 'rotate(180deg)';
+                        }
+                    } else if (taskType === 'popout') {
+                        // Pop-out Search: Target has different color, distractors same color
+                        if (i === targetPosition) {
+                            ring.classList.add('target-ring-color');
+                            ring.textContent = 'O'; // Red
+                        } else {
+                            ring.classList.add('distractor-ring');
+                            ring.textContent = 'O'; // Black
+                        }
+                    }
 
                     taskContainer.appendChild(ring);
-                    ring.addEventListener('click', onTargetClick.bind(null, i === targetPosition));
+                    ring.addEventListener('click', onRingClick.bind(null, i === targetPosition));
                 }
-
-                calibrationMessage.textContent = 'Find the red ring!';
-                startTimer();
             }
 
-            function onTargetClick(isTarget) {
+            // Handle Ring Click
+            function onRingClick(isTarget) {
                 if (isTarget) {
                     clearTimeout(timer);
-                    calibrationMessage.textContent = 'Target found! Proceeding to the next task...';
-                    setTimeout(() => {
-                        currentTask = currentTask === 'serial' ? 'popout' : 'serial'; // Switch task type
-                        startTask();
-                    }, 2000);
+                    const reactionTime = Date.now() - trialStartTime;
+                    calibrationMessage.textContent = `Correct! Reaction Time: ${reactionTime} ms. Preparing next trial...`;
+                    // Store trial data here (e.g., reactionTime, gazeData)
+                    // TODO: Implement data storage
+
+                    setTimeout(startNextTrial, 2000);
                 } else {
-                    calibrationMessage.textContent = 'Incorrect! Try again.';
+                    calibrationMessage.textContent = 'Incorrect target. Try again!';
                 }
             }
 
+            // Start Timer for Trial
             function startTimer() {
                 timer = setTimeout(() => {
-                    calibrationMessage.textContent = 'Time is up! Proceeding to the next task...';
-                    setTimeout(() => {
-                        currentTask = currentTask === 'serial' ? 'popout' : 'serial';
-                        startTask();
-                    }, 2000);
+                    calibrationMessage.textContent = 'Time is up! Proceeding to the next trial...';
+                    setTimeout(startNextTrial, 2000);
                 }, searchTimeLimit);
             }
+
+            // End Experiment
+            function endExperiment() {
+                taskContainer.innerHTML = '';
+                calibrationMessage.textContent = 'Data Collection complete. Thank you for participating!';
+                trialInfo.textContent = '';
+                stopCamera();
+                // Optionally, process and send the collected data
+                // TODO: Implement data processing and submission
+            }
+
+            // Shuffle array in-place using Fisher-Yates algorithm
+            function shuffleArray(array) {
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+            }
+
+            // Initialize WebGazer for Eye Tracking
+            webgazer.setGazeListener(function(data, elapsedTime) {
+                if (data == null) {
+                    return;
+                }
+                // Store gaze data with timestamp
+                gazeData.push({
+                    x: data.x,
+                    y: data.y,
+                    time: elapsedTime
+                });
+            }).begin();
+
+            // Disable WebGazer’s built-in UI
+            webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+
+            // Optional: Load TensorFlow.js model if needed for predictions
+            /*
+            async function loadModel() {
+                try {
+                    console.log("Loading model...");
+                    window.model = await tf.loadLayersModel('./model.json');
+                    console.log('Model loaded successfully');
+                } catch (error) {
+                    console.error('Error loading model:', error);
+                }
+            }
+            loadModel();
+            */
         });
     </script>
 </body>
