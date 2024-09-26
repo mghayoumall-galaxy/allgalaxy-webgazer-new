@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eye Movement Data Collection & Visual Search Task</title>
-    <link rel="stylesheet" href="style.css">
     <!-- TensorFlow.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <!-- WebGazer for Eye Tracking -->
@@ -21,42 +20,39 @@
             color: #333;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
         }
 
         /* Container */
         .container {
-            width: 100%;
+            width: 90%;
             max-width: 1200px;
             text-align: center;
-            position: relative;
             padding: 20px;
-            flex-grow: 1;
         }
 
         /* Header Styling */
         header h1 {
-            font-size: 2.5em;
+            font-size: 2em;
             font-weight: 700;
             color: #007BFF;
-            margin: 0;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #61dafb;
             padding-bottom: 10px;
-            border-bottom: 3px solid #61dafb;
         }
 
         /* Central Camera Frame */
         #camera-frame {
             position: relative;
             margin: 20px auto;
-            width: 250px;
-            height: 250px;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
             overflow: hidden;
             border: 4px solid #61dafb;
             background-color: #ffffff;
             box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
-            z-index: 10;
         }
 
         #webcamVideo {
@@ -110,7 +106,7 @@
         #calibrationMessage {
             margin-top: 10px;
             color: #007BFF;
-            font-size: 1.5em;
+            font-size: 1.2em;
             text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
         }
 
@@ -120,12 +116,12 @@
             background: #ffffff;
             color: #777;
             padding: 15px;
-            border-radius: 0 0 20px 20px;
-            font-size: 1em;
+            border-radius: 20px 20px 0 0;
+            font-size: 0.9em;
             text-align: center;
             box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
-            position: relative;
-            margin-top: auto;
+            position: fixed;
+            bottom: 0;
         }
 
         /* Start Button */
@@ -138,6 +134,7 @@
             border-radius: 5px;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin-bottom: 20px;
         }
 
         #startButton:hover {
@@ -147,7 +144,7 @@
         /* Trial Information */
         #trialInfo {
             margin-top: 15px;
-            font-size: 1.2em;
+            font-size: 1.1em;
             color: #555;
         }
 
@@ -160,8 +157,8 @@
             }
 
             #camera-frame {
-                width: 200px;
-                height: 200px;
+                width: 150px;
+                height: 150px;
             }
 
             #startButton {
@@ -203,7 +200,7 @@
     </footer>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const taskContainer = document.getElementById('task-container');
             const calibrationMessage = document.getElementById('calibrationMessage');
             const startButton = document.getElementById('startButton');
@@ -211,14 +208,13 @@
             const webcamVideo = document.getElementById('webcamVideo');
 
             const searchTimeLimit = 60000; // 60 seconds per trial
-            const totalTrials = 20; // Total number of trials (10 serial + 10 pop-out)
             let currentTrial = 0;
             let trials = [];
 
             // Configuration based on the research paper
             const taskTypes = ['serial', 'popout'];
             const numberOfRingsOptions = [4, 48];
-            const trialsPerCombination = 5; // 5 trials for each combination (2 tasks * 2 ring numbers)
+            const trialsPerCombination = 10; // Adjusted based on total trials described in the paper
 
             // Initialize trials
             for (let task of taskTypes) {
@@ -242,7 +238,7 @@
             let trialStartTime;
 
             // Start Button Event Listener
-            startButton.addEventListener('click', function() {
+            startButton.addEventListener('click', function () {
                 startButton.style.display = 'none';
                 startCamera()
                     .then(() => {
@@ -288,7 +284,7 @@
                 const trial = trials[currentTrial];
                 currentTrial++;
 
-                trialInfo.textContent = `Trial ${currentTrial} of ${trials.length}: ${trial.taskType.toUpperCase()} Search with ${trial.numberOfRings} Rings`;
+                trialInfo.textContent = `Trial ${currentTrial} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`;
 
                 createSearchTask(trial.taskType, trial.numberOfRings);
                 calibrationMessage.textContent = 'Please find the target as quickly as possible.';
@@ -339,10 +335,10 @@
                     clearTimeout(timer);
                     const reactionTime = Date.now() - trialStartTime;
                     calibrationMessage.textContent = `Correct! Reaction Time: ${reactionTime} ms. Preparing next trial...`;
-                    
+
                     // Store trial data here (e.g., reactionTime, gazeData)
                     // Implement feature extraction and data storage
-                    extractFeaturesAndStore();
+                    extractFeaturesAndStore(reactionTime);
 
                     setTimeout(startNextTrial, 2000);
                 } else {
@@ -355,7 +351,7 @@
                 timer = setTimeout(() => {
                     calibrationMessage.textContent = 'Time is up! Proceeding to the next trial...';
                     // Implement feature extraction and data storage even if time is up
-                    extractFeaturesAndStore();
+                    extractFeaturesAndStore(null); // Null indicates no reaction time
 
                     setTimeout(startNextTrial, 2000);
                 }, searchTimeLimit);
@@ -384,7 +380,7 @@
             }
 
             // Initialize WebGazer for Eye Tracking
-            webgazer.setGazeListener(function(data, elapsedTime) {
+            webgazer.setGazeListener(function (data, elapsedTime) {
                 if (data == null) {
                     return;
                 }
@@ -402,29 +398,25 @@
 
             // Feature Extraction Function
             function extractFeatures() {
-                // Placeholder functions for feature extraction
-                // Implement actual algorithms based on raw gazeData
-
+                // Implement feature extraction based on the collected gazeData
+                // This function should compute the six features:
                 // 1. Pupil Size Modulation (30%)
+                // 2. Saccadic Latency (15%)
+                // 3. Smooth Pursuit Gain (12%)
+                // 4. Saccadic Accuracy (10%)
+                // 5. Fixation Duration (8%)
+                // 6. Search Time in Serial Search (12%)
+
+                // Example placeholder implementations:
                 const pupilSizes = gazeData.map(d => d.pupilSize).filter(p => p !== null);
                 const pupilSizeModulation = computePupilSizeModulation(pupilSizes);
 
-                // 2. Saccadic Latency (15%)
                 const saccadicLatency = computeSaccadicLatency(gazeData);
-
-                // 3. Smooth Pursuit Gain (12%)
                 const smoothPursuitGain = computeSmoothPursuitGain(gazeData);
-
-                // 4. Saccadic Accuracy (10%)
                 const saccadicAccuracy = computeSaccadicAccuracy(gazeData);
-
-                // 5. Fixation Duration (8%)
                 const fixationDuration = computeFixationDuration(gazeData);
-
-                // 6. Search Time in Serial Search (12%)
                 const searchTimeSerial = computeSearchTimeSerial(gazeData);
 
-                // Return features as an array or object
                 return [
                     pupilSizeModulation,
                     saccadicLatency,
@@ -435,57 +427,145 @@
                 ];
             }
 
-            // Implement actual feature extraction algorithms
-            // The following are placeholders and need to be implemented based on your data and requirements
-
+            // Placeholder Feature Extraction Functions
             function computePupilSizeModulation(pupilSizes) {
-                // Example: Calculate the average pupil size
+                // Calculate the standard deviation of pupil sizes
                 if (pupilSizes.length === 0) return 0;
-                const sum = pupilSizes.reduce((a, b) => a + b, 0);
-                return sum / pupilSizes.length;
+                const mean = pupilSizes.reduce((a, b) => a + b, 0) / pupilSizes.length;
+                const variance = pupilSizes.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / pupilSizes.length;
+                return Math.sqrt(variance);
             }
 
             function computeSaccadicLatency(gazeData) {
-                // Example: Time between target appearance and first saccade
-                // Needs implementation based on task timing and gaze data
-                return 0; // Placeholder
+                // Calculate the average time between trial start and the first significant saccade
+                // This requires defining what constitutes a saccade in the data
+                // Placeholder implementation:
+                // Detect significant changes in gaze positions as saccades
+                const saccades = detectSaccades(gazeData);
+                if (saccades.length === 0) return searchTimeLimit; // No saccade detected
+                return saccades[0].timestamp;
             }
 
             function computeSmoothPursuitGain(gazeData) {
-                // Example: Ratio of eye velocity to target velocity
-                // Needs implementation based on movement data
-                return 0; // Placeholder
+                // Calculate the ratio of eye velocity to target velocity
+                // Placeholder: Requires target movement data, which is not present
+                // Return a default value or compute based on available data
+                return 0; // Needs proper implementation
             }
 
             function computeSaccadicAccuracy(gazeData) {
-                // Example: Distance between saccade endpoints and target
-                // Needs implementation based on target position and gaze data
-                return 0; // Placeholder
+                // Measure the accuracy of saccades towards the target
+                // Placeholder implementation:
+                // Compare final gaze position to target position
+                const targetPosition = getTargetPosition();
+                if (!targetPosition) return 0;
+
+                const lastFixation = gazeData[gazeData.length - 1];
+                const distance = Math.sqrt(Math.pow(lastFixation.x - targetPosition.x, 2) + Math.pow(lastFixation.y - targetPosition.y, 2));
+                const accuracy = distance < 50 ? 1 : 0; // Assuming within 50 pixels is accurate
+                return accuracy;
             }
 
             function computeFixationDuration(gazeData) {
-                // Example: Average duration of fixations
-                // Needs implementation based on gaze data
-                return 0; // Placeholder
+                // Calculate the average duration of fixations
+                // Placeholder implementation:
+                // Identify fixations as periods with minimal gaze movement
+                const fixations = detectFixations(gazeData);
+                if (fixations.length === 0) return 0;
+                const totalDuration = fixations.reduce((sum, fix) => sum + (fix.end - fix.start), 0);
+                return totalDuration / fixations.length;
             }
 
             function computeSearchTimeSerial(gazeData) {
-                // Example: Total time taken to find target in serial search tasks
-                // Needs implementation based on task type and gaze data
-                return 0; // Placeholder
+                // Calculate the total time taken to find the target in serial search tasks
+                // Placeholder implementation:
+                // Sum reaction times for serial search tasks
+                // Requires trial-wise categorization
+                // For simplicity, return the average reaction time for serial tasks
+                const serialTrials = trials.filter(t => t.taskType === 'serial');
+                const serialReactionTimes = serialTrials.map(t => t.reactionTime).filter(rt => rt !== null);
+                if (serialReactionTimes.length === 0) return 0;
+                const total = serialReactionTimes.reduce((a, b) => a + b, 0);
+                return total / serialReactionTimes.length;
+            }
+
+            // Detect Saccades based on gaze data
+            function detectSaccades(gazeData) {
+                const saccades = [];
+                const velocityThreshold = 1000; // pixels per second, adjust as needed
+                for (let i = 1; i < gazeData.length; i++) {
+                    const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // in seconds
+                    const dx = gazeData[i].x - gazeData[i - 1].x;
+                    const dy = gazeData[i].y - gazeData[i - 1].y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const velocity = distance / dt;
+                    if (velocity > velocityThreshold) {
+                        saccades.push({ x: gazeData[i].x, y: gazeData[i].y, timestamp: gazeData[i].timestamp });
+                    }
+                }
+                return saccades;
+            }
+
+            // Detect Fixations based on gaze data
+            function detectFixations(gazeData) {
+                const fixations = [];
+                const fixationThreshold = 50; // pixels
+                let fixationStart = null;
+                let fixationEnd = null;
+                let baseX = null;
+                let baseY = null;
+
+                for (let i = 0; i < gazeData.length; i++) {
+                    const point = gazeData[i];
+                    if (baseX === null && baseY === null) {
+                        baseX = point.x;
+                        baseY = point.y;
+                        fixationStart = point.timestamp;
+                        fixationEnd = point.timestamp;
+                        continue;
+                    }
+
+                    const distance = Math.sqrt(Math.pow(point.x - baseX, 2) + Math.pow(point.y - baseY, 2));
+                    if (distance < fixationThreshold) {
+                        fixationEnd = point.timestamp;
+                    } else {
+                        if (fixationEnd - fixationStart > 100) { // Minimum fixation duration in ms
+                            fixations.push({ start: fixationStart, end: fixationEnd });
+                        }
+                        fixationStart = point.timestamp;
+                        fixationEnd = point.timestamp;
+                        baseX = point.x;
+                        baseY = point.y;
+                    }
+                }
+
+                // Add the last fixation
+                if (fixationEnd - fixationStart > 100) {
+                    fixations.push({ start: fixationStart, end: fixationEnd });
+                }
+
+                return fixations;
+            }
+
+            // Placeholder: Retrieve the target position from the current trial
+            function getTargetPosition() {
+                // Implement a method to get the target position based on the current trial
+                // This requires storing the target positions during task creation
+                return null; // Needs proper implementation
             }
 
             // Extract Features and Store (Called after each trial)
-            function extractFeaturesAndStore() {
+            function extractFeaturesAndStore(reactionTime) {
                 // Depending on how you want to store data, implement here
                 // For example, you can store intermediate data or log it
+                // This function can be expanded based on your data storage needs
             }
 
             // Make Prediction using TensorFlow.js Model
             async function makePrediction(features) {
                 try {
                     console.log("Loading model...");
-                    const model = await tf.loadLayersModel('./model.json');
+                    const model = await tf.loadLayersModel('./model.json'); // Ensure the model.json is correctly hosted
                     console.log('Model loaded successfully');
 
                     // Normalize or preprocess features as required by your model
@@ -503,6 +583,11 @@
                     console.error('Prediction error:', error);
                     window.location.href = 'gaze5.html?result=error';
                 }
+            }
+
+            // Helper Function to Capitalize First Letter
+            function capitalizeFirstLetter(string) {
+                return string.charAt(0).toUpperCase() + string.slice(1);
             }
         });
     </script>
