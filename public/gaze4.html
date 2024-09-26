@@ -65,28 +65,6 @@
             object-fit: cover;
         }
 
-        /* Image Frame */
-        #image-frame-container {
-            margin: 20px 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-        }
-
-        #image-frame {
-            width: 100%;
-            max-width: 800px;
-        }
-
-        #demoImage {
-            width: 100%;
-            height: auto;
-            border-radius: 10px;
-            display: none;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-        }
-
         /* Task Container */
         #task-container {
             margin: 20px 0;
@@ -205,13 +183,6 @@
             <video id="webcamVideo" autoplay playsinline></video>
         </div>
 
-        <!-- Image Frame (Optional for Visual Memory Tasks) -->
-        <div id="image-frame-container">
-            <div id="image-frame">
-                <img id="demoImage" src="images/image1.jpg" alt="Demo Image">
-            </div>
-        </div>
-
         <!-- Start Button -->
         <button id="startButton">Start Task</button>
 
@@ -237,7 +208,6 @@
             const calibrationMessage = document.getElementById('calibrationMessage');
             const startButton = document.getElementById('startButton');
             const trialInfo = document.getElementById('trialInfo');
-            const demoImage = document.getElementById('demoImage');
             const webcamVideo = document.getElementById('webcamVideo');
 
             const searchTimeLimit = 60000; // 60 seconds per trial
@@ -266,7 +236,7 @@
             shuffleArray(trials);
 
             // Array to store collected gaze data
-            const gazeData = [];
+            let gazeData = [];
 
             let timer;
             let trialStartTime;
@@ -369,8 +339,10 @@
                     clearTimeout(timer);
                     const reactionTime = Date.now() - trialStartTime;
                     calibrationMessage.textContent = `Correct! Reaction Time: ${reactionTime} ms. Preparing next trial...`;
+                    
                     // Store trial data here (e.g., reactionTime, gazeData)
-                    // TODO: Implement data storage
+                    // Implement feature extraction and data storage
+                    extractFeaturesAndStore();
 
                     setTimeout(startNextTrial, 2000);
                 } else {
@@ -382,6 +354,9 @@
             function startTimer() {
                 timer = setTimeout(() => {
                     calibrationMessage.textContent = 'Time is up! Proceeding to the next trial...';
+                    // Implement feature extraction and data storage even if time is up
+                    extractFeaturesAndStore();
+
                     setTimeout(startNextTrial, 2000);
                 }, searchTimeLimit);
             }
@@ -389,11 +364,15 @@
             // End Experiment
             function endExperiment() {
                 taskContainer.innerHTML = '';
-                calibrationMessage.textContent = 'Data Collection complete. Thank you for participating!';
+                calibrationMessage.textContent = 'Data Collection complete. Processing results...';
                 trialInfo.textContent = '';
                 stopCamera();
-                // Optionally, process and send the collected data
-                // TODO: Implement data processing and submission
+
+                // Process the collected gaze data to extract features
+                const features = extractFeatures();
+
+                // Load the TensorFlow.js model and make prediction
+                makePrediction(features);
             }
 
             // Shuffle array in-place using Fisher-Yates algorithm
@@ -413,26 +392,118 @@
                 gazeData.push({
                     x: data.x,
                     y: data.y,
-                    time: elapsedTime
+                    timestamp: elapsedTime,
+                    pupilSize: data.pupil || null // Assuming WebGazer provides pupil size
                 });
             }).begin();
 
             // Disable WebGazer’s built-in UI
             webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
 
-            // Optional: Load TensorFlow.js model if needed for predictions
-            /*
-            async function loadModel() {
+            // Feature Extraction Function
+            function extractFeatures() {
+                // Placeholder functions for feature extraction
+                // Implement actual algorithms based on raw gazeData
+
+                // 1. Pupil Size Modulation (30%)
+                const pupilSizes = gazeData.map(d => d.pupilSize).filter(p => p !== null);
+                const pupilSizeModulation = computePupilSizeModulation(pupilSizes);
+
+                // 2. Saccadic Latency (15%)
+                const saccadicLatency = computeSaccadicLatency(gazeData);
+
+                // 3. Smooth Pursuit Gain (12%)
+                const smoothPursuitGain = computeSmoothPursuitGain(gazeData);
+
+                // 4. Saccadic Accuracy (10%)
+                const saccadicAccuracy = computeSaccadicAccuracy(gazeData);
+
+                // 5. Fixation Duration (8%)
+                const fixationDuration = computeFixationDuration(gazeData);
+
+                // 6. Search Time in Serial Search (12%)
+                const searchTimeSerial = computeSearchTimeSerial(gazeData);
+
+                // Return features as an array or object
+                return [
+                    pupilSizeModulation,
+                    saccadicLatency,
+                    smoothPursuitGain,
+                    saccadicAccuracy,
+                    fixationDuration,
+                    searchTimeSerial
+                ];
+            }
+
+            // Implement actual feature extraction algorithms
+            // The following are placeholders and need to be implemented based on your data and requirements
+
+            function computePupilSizeModulation(pupilSizes) {
+                // Example: Calculate the average pupil size
+                if (pupilSizes.length === 0) return 0;
+                const sum = pupilSizes.reduce((a, b) => a + b, 0);
+                return sum / pupilSizes.length;
+            }
+
+            function computeSaccadicLatency(gazeData) {
+                // Example: Time between target appearance and first saccade
+                // Needs implementation based on task timing and gaze data
+                return 0; // Placeholder
+            }
+
+            function computeSmoothPursuitGain(gazeData) {
+                // Example: Ratio of eye velocity to target velocity
+                // Needs implementation based on movement data
+                return 0; // Placeholder
+            }
+
+            function computeSaccadicAccuracy(gazeData) {
+                // Example: Distance between saccade endpoints and target
+                // Needs implementation based on target position and gaze data
+                return 0; // Placeholder
+            }
+
+            function computeFixationDuration(gazeData) {
+                // Example: Average duration of fixations
+                // Needs implementation based on gaze data
+                return 0; // Placeholder
+            }
+
+            function computeSearchTimeSerial(gazeData) {
+                // Example: Total time taken to find target in serial search tasks
+                // Needs implementation based on task type and gaze data
+                return 0; // Placeholder
+            }
+
+            // Extract Features and Store (Called after each trial)
+            function extractFeaturesAndStore() {
+                // Depending on how you want to store data, implement here
+                // For example, you can store intermediate data or log it
+            }
+
+            // Make Prediction using TensorFlow.js Model
+            async function makePrediction(features) {
                 try {
                     console.log("Loading model...");
-                    window.model = await tf.loadLayersModel('./model.json');
+                    const model = await tf.loadLayersModel('./model.json');
                     console.log('Model loaded successfully');
+
+                    // Normalize or preprocess features as required by your model
+                    const inputTensor = tf.tensor2d([features]);
+
+                    // Make prediction
+                    const prediction = model.predict(inputTensor);
+                    const predictedValue = prediction.argMax(1).dataSync()[0]; // Assuming classification
+
+                    console.log("Predicted value:", predictedValue);
+
+                    // Redirect to gaze5.html with the prediction result
+                    window.location.href = `gaze5.html?result=${predictedValue}`;
                 } catch (error) {
-                    console.error('Error loading model:', error);
+                    console.error('Prediction error:', error);
+                    window.location.href = 'gaze5.html?result=error';
                 }
             }
-            loadModel();
-            */
         });
     </script>
 </body>
