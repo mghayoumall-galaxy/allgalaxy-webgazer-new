@@ -1,0 +1,236 @@
+/* Basic Reset */
+body, h1, h2, p, div, img, video {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Body Styling */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #1c1e24; /* Dark, modern background color */
+    color: #ffffff; /* White text for readability */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+/* Container Styling */
+.container {
+    width: 90%;
+    max-width: 800px;
+    background: #2a2d37; /* Slightly lighter background for contrast */
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); /* Strong shadow for more defined box */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh; /* Ensures the container has a substantial height */
+}
+
+/* Header Styling */
+header {
+    width: 100%;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+.logo {
+    width: 120px;
+    margin-bottom: 20px;
+}
+
+header h1 {
+    font-size: 2.5em;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #61dafb;
+}
+
+/* Main Content Styling */
+main {
+    width: 100%;
+}
+
+.intro h2 {
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #61dafb;
+}
+
+.intro p {
+    font-size: 1.2em;
+    line-height: 1.6;
+    color: #d1d1d1;
+    margin-bottom: 25px;
+}
+
+/* Call-to-Action (CTA) Styling */
+.cta {
+    margin-top: 30px;
+}
+
+.cta button {
+    padding: 15px 40px;
+    border: none;
+    border-radius: 5px;
+    background-color: #61dafb;
+    color: #1c1e24;
+    font-size: 1.2em;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.cta button:hover {
+    background-color: #21a1c4;
+    transform: translateY(-2px);
+}
+
+/* Camera and Image Frames */
+#camera-frame, #image-frame {
+    margin: 15px 0;
+    padding: 12px;
+    background: #282c34;
+    border: 3px solid #61dafb;
+    border-radius: 15px;
+    width: 100%;
+    max-width: 600px;
+    height: 350px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+#webcamVideo {
+    width: 100%;
+    height: 100%;
+    border-radius: 15px;
+    clip-path: circle(120px at center);
+    object-fit: cover;
+}
+
+/* Gaze Data Display */
+#gazeData {
+    padding: 10px;
+    background-color: #3a3f4b;
+    border: 3px solid #61dafb;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    width: 100%;
+    text-align: center;
+    font-size: 1.2em;
+    font-weight: bold;
+    color: #61dafb;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+#demoImage {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 15px;
+    display: block;
+}
+
+/* Calibration Points */
+#calibrationDiv {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+    align-items: center;
+}
+
+.calibrationPoint {
+    width: 15px;
+    height: 15px;
+    background-color: #ff6584;
+    border-radius: 50%;
+    position: absolute;
+    visibility: hidden;
+}
+
+/* Camera Select Container */
+#cameraSelectContainer {
+    margin-top: 10px;
+}
+
+/* Button and Select Styling */
+button, select {
+    cursor: pointer;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 10px;
+    background-color: #61dafb;
+    color: #282c34;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+button:hover, select:hover {
+    background-color: #21a1c4;
+    transform: translateY(-2px);
+}
+
+button:disabled {
+    background-color: #777;
+    cursor: not-allowed;
+}
+
+select:disabled {
+    background-color: #444;
+}
+
+button:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(97, 218, 251, 0.5);
+}
+
+/* Footer Styling */
+footer {
+    width: 100%;
+    background: #2a2d37;
+    color: #777;
+    text-align: center;
+    padding: 20px;
+    border-radius: 0 0 15px 15px;
+    font-size: 0.9em;
+    letter-spacing: 0.5px;
+    margin-top: 30px;
+}
+
+/* Ensure the page looks good on all devices */
+@media (max-width: 768px) {
+    .container {
+        width: 95%;
+        padding: 20px;
+    }
+
+    header h1 {
+        font-size: 2em;
+    }
+
+    .intro h2 {
+        font-size: 1.8em;
+    }
+
+    .cta button {
+        padding: 12px 30px;
+        font-size: 1em;
+    }
+}

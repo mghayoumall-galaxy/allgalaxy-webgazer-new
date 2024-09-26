@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>User Information</h1>
+        </header>
+        <main>
+            <p>Please provide the following information:</p>
+            <form id="userInfoForm">
+                <label for="age">Age:</label>
+                <input type="number" id="age" name="age" required><br>
+                
+                <label for="sex">Sex:</label>
+                <select id="sex" name="sex" required>
+                    <option value="" disabled selected>Select your sex</option>
+                    <option value="male">Male</option>
+                    <option value="female">Female</option>
+                    <option value="other">Other</option>
+                </select><br>
+                
+                <label for="healthCondition">Do you have any known eye conditions? (e.g., cataracts, glaucoma)</label>
+                <input type="text" id="healthCondition" name="healthCondition" required><br>
+                
+                <button type="submit">Submit</button>
+            </form>
+            <div id="eligibilityMessage" style="margin-top: 20px; color: red;"></div>
+        </main>
+        <footer>
+            <p>&copy; 2024 Eye Movement Research</p>
+        </footer>
+    </div>
+
+    <script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('userInfoForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const age = parseInt(document.getElementById('age').value, 10);
+        const healthCondition = document.getElementById('healthCondition').value.toLowerCase().trim();
+        const eligibilityMessage = document.getElementById('eligibilityMessage');
+
+        if (age < 50 || healthCondition.includes('cataracts') || healthCondition.includes('glaucoma')) {
+            eligibilityMessage.innerText = 'Unfortunately, you are not eligible for this study.';
+        } else {
+            eligibilityMessage.innerText = ''; // Clear any previous messages
+            window.location.href = 'gaze2.html'; // Redirect to the instructions page
+        }
+    });
+});
+    </script>
+</body>
+</html>

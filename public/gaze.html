@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome - Alzheimer’s Early Detection Software</title>
+    <style>
+        /* Basic Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1c1c1e; /* Dark background for contrast */
+            color: #ffffff; /* White text for readability */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Hero Section */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            background: url('images/hero-background.jpg') no-repeat center center/cover;
+            position: relative;
+            width: 100%;
+            flex-grow: 1;
+        }
+
+        .hero-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6); /* Dark overlay */
+            z-index: 1;
+        }
+
+        .hero-content {
+            z-index: 2;
+            padding: 20px;
+        }
+
+        .hero-content header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #ffffff; /* White text */
+        }
+
+        .hero-content p.tagline {
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            color: #d1d1d1; /* Light gray text for secondary emphasis */
+        }
+
+        .hero-content p {
+            font-size: 1.2em;
+            line-height: 1.6;
+            color: #d1d1d1; /* Light gray text */
+        }
+
+        .hero-content .cta {
+            background-color: #007bff; /* Science of color: Cool blue */
+            color: #ffffff;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .hero-content .cta:hover {
+            background-color: #0056b3; /* Darker blue for hover effect */
+            transform: translateY(-3px);
+        }
+
+        .hero-content .cta:active {
+            background-color: #004080; /* Even darker blue for active state */
+            transform: translateY(1px);
+        }
+
+        .logo {
+            max-width: 150px; /* Larger logo image */
+            margin-bottom: 20px;
+        }
+
+        /* Footer Styling */
+        footer {
+            background-color: #1c1c1e; /* Dark background */
+            color: #ffffff;
+            padding: 20px 0;
+            text-align: center;
+            font-size: 0.9em;
+            width: 100%;
+        }
+
+        footer a {
+            color: #00aaff; /* Bright blue links */
+            text-decoration: none;
+            margin: 0 10px;
+        }
+
+        footer .contact-info {
+            margin-top: 10px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 1.8em;
+            }
+
+            .hero-content p.tagline {
+                font-size: 1.2em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Hero Section -->
+    <div class="hero">
+        <div class="hero-overlay"></div>
+        <div class="hero-content">
+            <header>
+                <img src="images/logo.png" alt="AllGalaxy Logo" class="logo">
+                <h1>Welcome to Alzheimer’s Early Detection Platform</h1>
+                <p class="tagline">Using Advanced AI to Detect Cognitive Decline Early</p>
+                <p>Welcome to our revolutionary software that utilizes advanced eye and facial tracking technology to assist in the early detection of Alzheimer’s Disease. This software is designed to be a non-invasive, highly accurate diagnostic tool, offering clinicians and researchers a cutting-edge solution to identify early signs of cognitive decline.</p>
+                <p>Before starting, please ensure your webcam is connected and functioning properly.</p>
+                <button onclick="window.location.href='gaze1.html'" class="cta">Start Demonstration</button>
+            </header>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 AllGalaxy. All rights reserved.</p>
+        <nav>
+            <a href="privacy-policy.html">Privacy Policy</a> |
+            <a href="terms-of-service.html">Terms of Service</a>
+        </nav>
+        <div class="contact-info">
+            <p>Contact Us: <a href="mailto:info@all-galaxy.com">info@all-galaxy.com</a> | +1-310-890-5262</p>
+        </div>
+    </footer>
+</body>
+
+</html>

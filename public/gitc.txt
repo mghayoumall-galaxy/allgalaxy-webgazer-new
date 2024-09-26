@@ -1,0 +1,6 @@
+cd C:\Users\mghay\allgalaxy-webgazer
+git init
+git remote set-url origin https://github.com/mghayoumall-galaxy/allgalaxy-webgazer.git
+git add .
+git commit -m "Updated modified files"
+git push -u origin master

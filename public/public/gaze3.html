@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Movement Data Collection</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Eye Movement Data Collection</h1>
+        </header>
+        <main>
+            <section id="intro">
+                <p>Welcome to the Eye Movement Data Collection Demo. Follow the instructions below to start the tracking process.</p>
+                <p>When prompted, follow the objects in the images shown below. Your gaze patterns will be recorded for analysis.</p>
+            </section>
+
+            <!-- Error Message Placeholder -->
+            <div id="errorMessage" style="color: red; display: none;"></div>
+
+            <!-- Camera Selection and Calibration -->
+            <div id="cameraSelectContainer">
+                <label for="cameraSelect">Select Camera: </label>
+                <select id="cameraSelect"></select>
+                <button id="startCalibrationButton">Start Calibration</button>
+            </div>
+
+            <!-- Tracking Information and Video Feed -->
+            <section id="tracking-info" style="display:none;">
+                <div id="camera-frame">
+                    <video id="webcamVideo" autoplay playsinline></video>
+                </div>
+                <div id="image-frame-container">
+                    <div id="image-frame">
+                        <img id="demoImage" src="images/image1.jpg" alt="Demo Image" style="display: none;">
+                    </div>
+                    <div id="image-mask"></div>
+                </div>
+            </section>
+            
+            <!-- Gaze Data Display -->
+            <div id="gazeData">Waiting for gaze data...</div>
+            
+            <!-- Calibration Points -->
+            <div id="calibrationDiv" class="calibration" style="display:none;">
+                <div class="calibrationPoint" id="point1" style="top: 10%; left: 10%;"></div>
+                <div class="calibrationPoint" id="point2" style="top: 10%; left: 50%;"></div>
+                <div class="calibrationPoint" id="point3" style="top: 10%; left: 90%;"></div>
+                <div class="calibrationPoint" id="point4" style="top: 50%; left: 10%;"></div>
+                <div class="calibrationPoint" id="point5" style="top: 50%; left: 50%;"></div>
+                <div class="calibrationPoint" id="point6" style="top: 50%; left: 90%;"></div>
+                <div class="calibrationPoint" id="point7" style="top: 90%; left: 10%;"></div>
+                <div class="calibrationPoint" id="point8" style="top: 90%; left: 50%;"></div>
+                <div class="calibrationPoint" id="point9" style="top: 90%; left: 90%;"></div>
+            </div>
+
+            <!-- Calibration Message -->
+            <div id="calibrationMessage" style="display:none;"></div>
+        </main>
+        <footer>
+            <p>&copy; 2024 Eye Movement Research</p>
+        </footer>
+    </div>
+</body>
+</html>

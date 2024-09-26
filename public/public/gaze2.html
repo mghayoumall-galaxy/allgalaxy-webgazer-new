@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructions</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Instructions</h1>
+        </header>
+        <main>
+            <p>Follow the instructions on the next screen to track your eye movements.</p>
+            <p>The process will take approximately 5 minutes.</p>
+            <button id="proceedButton">Proceed to Tracking</button>
+        </main>
+        <footer>
+            <p>&copy; 2024 Eye Movement Research</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const proceedButton = document.getElementById('proceedButton');
+            proceedButton.addEventListener('click', function() {
+                window.location.href = 'gaze3.html';
+            });
+        });
+    </script>
+</body>
+</html>

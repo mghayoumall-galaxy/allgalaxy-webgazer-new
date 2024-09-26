@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calibration - Eye Movement Data Collection</title>
+    <style>
+        /* Basic Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1c1c1e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Container */
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: #2c2c2e;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
+        }
+
+        /* Header Styling */
+        header {
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #00aaff;
+            margin-bottom: 20px;
+        }
+
+        /* Video Frame */
+        #videoFrame {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin: 0 auto 20px auto;
+            position: relative;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        #videoElement {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Masking the rest of the screen */
+        .mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1;
+        }
+
+        /* Calibration Points */
+        .calibrationPoint {
+            width: 15px;
+            height: 15px;
+            background-color: #e63946;
+            border-radius: 50%;
+            position: absolute;
+            visibility: hidden;
+            transition: visibility 0.3s ease-in-out;
+        }
+
+        /* Calibration Message */
+        #calibrationMessage {
+            margin-top: 20px;
+            color: #00aaff;
+            font-size: 1.2em;
+        }
+
+        /* Footer Styling */
+        footer {
+            margin-top: 30px;
+            color: #777;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mask"></div>
+    <div class="container">
+        <header>
+            <h1>Calibration</h1>
+        </header>
+        <main>
+            <!-- Video Frame for Camera -->
+            <div id="videoFrame">
+                <video id="videoElement" autoplay></video>
+            </div>
+            
+            <div id="calibrationMessage">Please follow the red dots on the screen to calibrate.</div>
+            
+            <!-- Calibration Points -->
+            <div id="calibrationDiv" class="calibration">
+                <div class="calibrationPoint" id="point1" style="top: 10%; left: 10%;"></div>
+                <div class="calibrationPoint" id="point2" style="top: 10%; left: 50%;"></div>
+                <div class="calibrationPoint" id="point3" style="top: 10%; left: 90%;"></div>
+                <div class="calibrationPoint" id="point4" style="top: 50%; left: 10%;"></div>
+                <div class="calibrationPoint" id="point5" style="top: 50%; left: 50%;"></div>
+                <div class="calibrationPoint" id="point6" style="top: 50%; left: 90%;"></div>
+                <div class="calibrationPoint" id="point7" style="top: 90%; left: 10%;"></div>
+                <div class="calibrationPoint" id="point8" style="top: 90%; left: 50%;"></div>
+                <div class="calibrationPoint" id="point9" style="top: 90%; left: 90%;"></div>
+            </div>
+        </main>
+        <footer>
+            <p>&copy; 2024 Eye Movement Research</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const videoElement = document.getElementById('videoElement');
+            const calibrationPoints = document.querySelectorAll('.calibrationPoint');
+            const calibrationMessage = document.getElementById('calibrationMessage');
+
+            // Start the camera
+            startCamera();
+
+            // Start the calibration process
+            startCalibration();
+
+            function startCamera() {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        videoElement.srcObject = stream;
+                    })
+                    .catch(error => {
+                        console.error('Error accessing the camera', error);
+                        calibrationMessage.textContent = 'Unable to access camera. Please check your settings.';
+                    });
+            }
+
+            function stopCamera() {
+                const stream = videoElement.srcObject;
+                const tracks = stream.getTracks();
+
+                tracks.forEach(track => {
+                    track.stop();
+                });
+
+                videoElement.srcObject = null;
+            }
+
+            function startCalibration() {
+                calibrationMessage.textContent = 'Calibration in progress...';
+                showCalibrationPoint(0);
+            }
+
+            function showCalibrationPoint(index) {
+                if (index >= calibrationPoints.length) {
+                    finishCalibration();
+                    return;
+                }
+
+                calibrationPoints[index].style.visibility = 'visible';
+                setTimeout(() => {
+                    calibrationPoints[index].style.visibility = 'hidden';
+                    showCalibrationPoint(index + 1);
+                }, 1000); // Adjust the time interval as needed
+            }
+
+            function finishCalibration() {
+                stopCamera(); // Stop the camera when calibration is complete
+                calibrationMessage.textContent = 'Calibration complete. Redirecting...';
+                setTimeout(() => {
+                    window.location.href = 'gaze4.html'; // Redirect to the next page after calibration
+                }, 2000);
+            }
+        });
+    </script>
+</body>
+
+</html>

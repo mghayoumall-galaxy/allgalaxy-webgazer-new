@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Information - Alzheimer’s Early Detection</title>
+    <style>
+        /* Basic Reset */
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1c1c1e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #2c2c2e;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Header Styling */
+        header {
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #00aaff;
+            margin-bottom: 10px;
+        }
+
+        header p {
+            font-size: 1.2em;
+            color: #d1d1d1;
+        }
+
+        /* Form Styling */
+        form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        label {
+            margin-top: 15px;
+            font-size: 1.1em;
+            text-align: left;
+            width: 100%;
+            max-width: 500px;
+            color: #ffffff;
+            line-height: 44px;
+        }
+
+        input, select {
+            width: 100%;
+            max-width: 500px;
+            padding: 12px;
+            margin-top: 5px;
+            border-radius: 5px;
+            border: 1px solid #00aaff;
+            background-color: #1c1c1e;
+            color: #ffffff;
+            font-size: 1em;
+            height: 44px;
+        }
+
+        /* Ensuring All Sections Have the Same Size */
+        .form-section {
+            width: 100%;
+            max-width: 500px;
+            height: 60px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* Button Styling */
+        button {
+            margin-top: 25px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: #fff;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            height: 50px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        /* Eligibility Message Styling */
+        #eligibilityMessage {
+            margin-top: 20px;
+            font-size: 1.1em;
+            color: #e63946;
+            height: 30px;
+        }
+
+        /* Footer Styling */
+        footer {
+            margin-top: 40px;
+            color: #777;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>User Information</h1>
+            <p>Please provide the following information to determine your eligibility for the eye-tracking study:</p>
+        </header>
+        <main>
+            <form id="userInfoForm">
+                <div class="form-section">
+                    <label for="age">Age:</label>
+                    <input type="number" id="age" name="age" required>
+                </div>
+
+                <div class="form-section">
+                    <label for="sex">Sex:</label>
+                    <select id="sex" name="sex" required>
+                        <option value="" disabled selected>Select your sex</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <label for="ethnicity">Ethnicity:</label>
+                    <select id="ethnicity" name="ethnicity" required>
+                        <option value="" disabled selected>Select your ethnicity</option>
+                        <option value="white">White</option>
+                        <option value="black">Black</option>
+                        <option value="asian">Asian</option>
+                        <option value="hispanic">Hispanic</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <label for="diagnosis">Diagnosed with early-stage Alzheimer’s?</label>
+                    <select id="diagnosis" name="diagnosis" required>
+                        <option value="" disabled selected>Select</option>
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <label for="healthCondition">Known eye conditions?</label>
+                    <input type="text" id="healthCondition" name="healthCondition" placeholder="e.g., none, cataracts" required>
+                </div>
+
+                <div class="form-section">
+                    <label for="location">Location:</label>
+                    <input type="text" id="location" name="location" placeholder="City, State, Country" required>
+                </div>
+
+                <button type="submit">Submit</button>
+            </form>
+            <div id="eligibilityMessage"></div>
+        </main>
+        <footer>
+            <p>&copy; 2024 ALLGALAXY. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('userInfoForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+
+                const age = parseInt(document.getElementById('age').value, 10);
+                const diagnosis = document.getElementById('diagnosis').value;
+                const healthCondition = document.getElementById('healthCondition').value.toLowerCase().trim();
+                const eligibilityMessage = document.getElementById('eligibilityMessage');
+
+                if (age < 50 || diagnosis === 'no' || healthCondition.includes('cataracts') || healthCondition.includes('glaucoma')) {
+                    eligibilityMessage.innerText = 'Unfortunately, you are not eligible for this study.';
+                } else {
+                    eligibilityMessage.innerText = ''; // Clear any previous messages
+                    window.location.href = 'gaze2.html'; // Redirect to the next page if eligible
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

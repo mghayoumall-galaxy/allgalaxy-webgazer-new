@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructions - Eye Tracking Study</title>
+    <style>
+        /* Basic Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #1c1c1e;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Container */
+        .container {
+            width: 90%;
+            max-width: 600px;
+            background: #2c2c2e;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Header Styling */
+        header {
+            margin-bottom: 30px;
+        }
+
+        header img {
+            width: 120px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5em;
+            font-weight: 700;
+            color: #00aaff;
+            margin-bottom: 20px;
+        }
+
+        /* Main Content */
+        main p {
+            font-size: 1.2em;
+            line-height: 1.8;
+            margin-bottom: 30px;
+            color: #d1d1d1;
+        }
+
+        /* Button Styling */
+        #proceedButton {
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            background-color: #007bff;
+            color: #ffffff;
+            font-size: 1.2em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        #proceedButton:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Footer Styling */
+        footer {
+            margin-top: 40px;
+            color: #777;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <img src="images/logo.png" alt="Eye Movement Research Logo">
+            <h1>Instructions</h1>
+        </header>
+        <main>
+            <p>Please follow the instructions on the next screen to track your eye movements.</p>
+            <p>The process will take approximately 5 minutes.</p>
+            <button id="proceedButton">Proceed to Tracking</button>
+        </main>
+        <footer>
+            <p>&copy; 2024 Eye Movement Research. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const proceedButton = document.getElementById('proceedButton');
+            proceedButton.addEventListener('click', function() {
+                window.location.href = 'gaze3.html';
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Movement Analysis Results</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .container {
+            text-align: center;
+            padding: 20px;
+            max-width: 600px;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: #007BFF;
+        }
+
+        p {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+        }
+
+        .result {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .advice {
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1.1em;
+            color: #fff;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Analysis Results</h1>
+        <p>Based on your eye movement data, we have the following results:</p>
+
+        <div class="result">
+            <p>Result: <span id="predictionResult">Loading...</span></p>
+        </div>
+
+        <div class="advice">
+            <p id="advice">Please wait while we process your data...</p>
+        </div>
+
+        <a href="gaze.html" class="btn">Start Again</a>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const predictionResult = document.getElementById('predictionResult');
+            const advice = document.getElementById('advice');
+
+            const result = urlParams.get('result');
+
+            if (result) {
+                predictionResult.textContent = result;
+
+                // Provide advice based on the prediction result
+                if (result === 'Healthy') {
+                    advice.textContent = 'Your eye movement metrics are within normal ranges. No further action is required.';
+                } else if (result === 'Early Alzheimer\'s') {
+                    advice.textContent = 'Some early signs of cognitive decline were detected. It is recommended to consult with a healthcare professional for further evaluation.';
+                } else if (result === 'Alzheimer\'s') {
+                    advice.textContent = 'Significant signs of cognitive decline were detected. Immediate consultation with a healthcare professional is advised.';
+                } else {
+                    advice.textContent = 'Unable to determine your condition. Please try again or consult a specialist.';
+                }
+            } else {
+                predictionResult.textContent = 'Error';
+                advice.textContent = 'There was an issue retrieving the analysis result. Please try again.';
+            }
+        });
+    </script>
+</body>
+
+</html>

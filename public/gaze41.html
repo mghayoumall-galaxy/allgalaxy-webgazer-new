@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye Movement Data Collection</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
+    <style>
+        /* Basic Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff;
+            color: #ffffff;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            text-align: center;
+            position: relative;
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        /* Header Styling */
+        header {
+            margin-bottom: 10px;
+        }
+
+        header h1 {
+            font-size: 2em;
+            font-weight: 700;
+            color: #007BFF;
+            margin: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #61dafb;
+        }
+
+        /* Central Camera Frame */
+        #camera-frame {
+            position: relative;
+            margin: 0 auto;
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #61dafb;
+            background-color: #ffffff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 10;
+        }
+
+        #webcamVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Image Frame */
+        #image-frame-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        #image-frame {
+            width: 100%;
+            max-width: 800px;
+        }
+
+        #demoImage {
+            width: 100%;
+            height: auto;
+            border-radius: 10px;
+            display: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        /* Calibration Message */
+        #calibrationMessage {
+            margin-top: 10px;
+            color: #61dafb;
+            font-size: 1.5em;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Footer Styling */
+        footer {
+            width: 100%;
+            background: #ffffff;
+            color: #777;
+            padding: 10px;
+            border-radius: 0 0 15px 15px;
+            font-size: 0.9em;
+            text-align: center;
+            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            margin-top: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Eye Movement Data Collection</h1>
+        </header>
+
+        <!-- Central Camera Frame -->
+        <div id="camera-frame">
+            <video id="webcamVideo" autoplay playsinline></video>
+        </div>
+
+        <!-- Image Frame -->
+        <div id="image-frame-container">
+            <div id="image-frame">
+                <img id="demoImage" src="images/image1.jpg" alt="Demo Image">
+            </div>
+        </div>
+
+        <!-- Calibration Message -->
+        <div id="calibrationMessage">Please follow the object in the image with your eyes.</div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Eye Movement Research</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const demoImage = document.getElementById('demoImage');
+            const calibrationMessage = document.getElementById('calibrationMessage');
+            const webcamVideo = document.getElementById('webcamVideo');
+            let currentImageIndex = 1;
+            const totalImages = 10;
+
+            // Array to store collected gaze data
+            const gazeData = [];
+
+            // Load the TensorFlow.js model
+            await loadModel();
+
+            // Disable WebGazer’s built-in camera viewer
+            webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+
+            // Start the camera
+            startCamera();
+
+            startImageSequence();
+
+            function startCamera() {
+                navigator.mediaDevices.getUserMedia({ video: true })
+                    .then(stream => {
+                        webcamVideo.srcObject = stream;
+                        console.log("Camera started");
+                    })
+                    .catch(error => {
+                        console.error('Error accessing the camera', error);
+                        calibrationMessage.textContent = 'Error: Unable to access camera.';
+                    });
+            }
+
+            function stopCamera() {
+                const stream = webcamVideo.srcObject;
+                if (stream) {
+                    const tracks = stream.getTracks();
+                    tracks.forEach(track => track.stop());
+                    webcamVideo.srcObject = null;
+                    console.log("Camera stopped");
+                }
+            }
+
+            function startImageSequence() {
+                showImage();
+                const imageInterval = setInterval(() => {
+                    currentImageIndex++;
+                    if (currentImageIndex > totalImages) {
+                        clearInterval(imageInterval);
+                        demoImage.style.display = 'none';
+                        calibrationMessage.textContent = 'Data Collection complete. Thank you!';
+                        stopCamera(); // Stop the camera after calibration
+                        makePrediction();
+                        return;
+                    }
+                    showImage();
+                }, 10000); // Show each image for 10 seconds
+            }
+
+            function showImage() {
+                demoImage.src = `images/image${currentImageIndex}.jpg`;
+                demoImage.style.display = 'block';
+                calibrationMessage.textContent = `Please follow the object in image ${currentImageIndex} with your eyes.`;
+            }
+
+            // Initialize WebGazer for eye tracking
+            webgazer.setGazeListener(async function(data, elapsedTime) {
+                if (data == null) {
+                    return;
+                }
+                console.log('Gaze data: X = ' + data.x + ' Y = ' + data.y);
+                // Store the gaze data
+                gazeData.push({ x: data.x, y: data.y });
+            }).begin();
+
+            function stopEyeTracking() {
+                webgazer.end();
+                console.log('Eye tracking stopped');
+            }
+
+            async function loadModel() {
+                try {
+                    console.log("Loading model...");
+                    window.model = await tf.loadLayersModel('./model.json');
+                    console.log('Model loaded successfully');
+                } catch (error) {
+                    console.error('Error loading model:', error);
+                }
+            }
+
+            async function makePrediction() {
+                stopEyeTracking(); // Stop eye tracking when making prediction
+                try {
+                    if (gazeData.length > 0) {
+                        // Average the collected gaze data
+                        const avgX = gazeData.reduce((sum, point) => sum + point.x, 0) / gazeData.length;
+                        const avgY = gazeData.reduce((sum, point) => sum + point.y, 0) / gazeData.length;
+
+                        console.log("Averaged Gaze Data: X = " + avgX + " Y = " + avgY);
+
+                        const inputTensor = tf.tensor2d([[avgX, avgY]]);
+                        console.log("Input Tensor for Prediction:", inputTensor.arraySync());
+
+                        console.log("Making prediction...");
+                        const prediction = window.model.predict(inputTensor);
+                        const predictedValue = prediction.argMax(1).dataSync()[0]; // Assuming classification
+                        console.log("Predicted value:", predictedValue);
+
+                        // Redirect to gaze5.html with the prediction result
+                        window.location.href = `gaze5.html?result=${predictedValue}`;
+                    } else {
+                        console.log("No gaze data available for prediction.");
+                        window.location.href = 'gaze5.html?result=unknown';
+                    }
+                } catch (error) {
+                    console.error('Prediction error:', error);
+                    window.location.href = 'gaze5.html?result=error';
+                }
+            }
+        });
+    </script>
+</body>
+</html>

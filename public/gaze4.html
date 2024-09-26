@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Search Task</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
+    <style>
+        /* Basic Reset */
+        body, html {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            height: 100%;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Container */
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            text-align: center;
+            position: relative;
+            padding: 20px;
+            flex-grow: 1;
+        }
+
+        /* Header Styling */
+        header h1 {
+            font-size: 2em;
+            font-weight: 700;
+            color: #007BFF;
+            margin: 0;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #61dafb;
+        }
+
+        /* Task Styling */
+        #task-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+
+        .ring {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: 2px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5em;
+            margin: 5px;
+        }
+
+        .target-ring-upward {
+            border-color: red; /* Pop-out target in red */
+            font-size: 2em; /* Make it visually distinctive */
+        }
+
+        /* Calibration Message */
+        #calibrationMessage {
+            margin-top: 10px;
+            color: #61dafb;
+            font-size: 1.5em;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Footer Styling */
+        footer {
+            width: 100%;
+            background: #ffffff;
+            color: #777;
+            padding: 10px;
+            border-radius: 0 0 15px 15px;
+            font-size: 0.9em;
+            text-align: center;
+            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.3);
+            position: relative;
+            margin-top: auto;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Visual Search Task</h1>
+        </header>
+
+        <!-- Task Container -->
+        <div id="task-container">
+            <!-- Dynamically generated visual search task will appear here -->
+        </div>
+
+        <!-- Calibration Message -->
+        <div id="calibrationMessage">Please identify the target!</div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Eye Movement Research</p>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const taskContainer = document.getElementById('task-container');
+            const calibrationMessage = document.getElementById('calibrationMessage');
+            const searchTimeLimit = 60000; // 60 seconds max per trial
+            let currentTask = 'popout'; // Task type: 'serial' or 'popout'
+            let timer;
+
+            // Start the first task
+            startTask();
+
+            function startTask() {
+                if (currentTask === 'serial') {
+                    createSerialSearch();
+                } else {
+                    createPopoutSearch();
+                }
+            }
+
+            // Create Serial Search Task
+            function createSerialSearch() {
+                taskContainer.innerHTML = '';
+                const targetPosition = Math.floor(Math.random() * 48); // Random target among 48 rings
+
+                for (let i = 0; i < 48; i++) {
+                    const ring = document.createElement('div');
+                    ring.classList.add('ring');
+                    ring.textContent = i === targetPosition ? 'O' : 'C'; // Upward target vs. downward distractors
+                    ring.style.transform = i === targetPosition ? 'rotate(0deg)' : 'rotate(180deg)'; // Target is upright
+
+                    taskContainer.appendChild(ring);
+                    ring.addEventListener('click', onTargetClick.bind(null, i === targetPosition));
+                }
+
+                calibrationMessage.textContent = 'Find the upward-facing ring!';
+                startTimer();
+            }
+
+            // Create Pop-out Search Task
+            function createPopoutSearch() {
+                taskContainer.innerHTML = '';
+                const targetPosition = Math.floor(Math.random() * 48); // Random target among 48 rings
+
+                for (let i = 0; i < 48; i++) {
+                    const ring = document.createElement('div');
+                    ring.classList.add('ring');
+                    ring.classList.add(i === targetPosition ? 'target-ring-upward' : 'distractor-ring');
+                    ring.textContent = 'O'; // Pop-out task is color-based
+
+                    taskContainer.appendChild(ring);
+                    ring.addEventListener('click', onTargetClick.bind(null, i === targetPosition));
+                }
+
+                calibrationMessage.textContent = 'Find the red ring!';
+                startTimer();
+            }
+
+            function onTargetClick(isTarget) {
+                if (isTarget) {
+                    clearTimeout(timer);
+                    calibrationMessage.textContent = 'Target found! Proceeding to the next task...';
+                    setTimeout(() => {
+                        currentTask = currentTask === 'serial' ? 'popout' : 'serial'; // Switch task type
+                        startTask();
+                    }, 2000);
+                } else {
+                    calibrationMessage.textContent = 'Incorrect! Try again.';
+                }
+            }
+
+            function startTimer() {
+                timer = setTimeout(() => {
+                    calibrationMessage.textContent = 'Time is up! Proceeding to the next task...';
+                    setTimeout(() => {
+                        currentTask = currentTask === 'serial' ? 'popout' : 'serial';
+                        startTask();
+                    }, 2000);
+                }, searchTimeLimit);
+            }
+        });
+    </script>
+</body>
+</html>

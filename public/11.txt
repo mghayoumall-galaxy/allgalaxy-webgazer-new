@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eye and Facial Tracking Demo</title>
+    <link rel="stylesheet" href="style.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow-models/face-landmarks-detection"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
+    <script defer src="script.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Eye and Facial Tracking Demo</h1>
+        </header>
+        <main>
+            <section id="intro">
+                <p>Welcome to the Eye and Facial Tracking Demo. Please follow the instructions below to start the tracking process.</p>
+                <p>When prompted, look at the objects in the images shown below the camera feed. Your gaze and facial patterns will be recorded for analysis.</p>
+            </section>
+            <section id="tracking-info">
+                <div id="camera-frame">
+                    <video id="webcamVideo" autoplay playsinline></video> <!-- Web camera feed -->
+                </div>
+                <div id="image-frame">
+                    <img id="demoImage" src="images/image1.jpg" alt="Demo Image"> <!-- Placeholder for demo image -->
+                </div>
+            </section>
+            <div id="gazeData">Waiting for gaze data...</div>
+            <div id="calibrationDiv" class="calibration">
+                <!-- Calibration points positioned across the viewport -->
+                <div class="calibrationPoint" id="point1" style="top: 10%; left: 10%;"></div>
+                <div class="calibrationPoint" id="point2" style="top: 10%; left: 50%;"></div>
+                <div class="calibrationPoint" id="point3" style="top: 10%; left: 90%;"></div>
+                <div class="calibrationPoint" id="point4" style="top: 50%; left: 10%;"></div>
+                <div class="calibrationPoint" id="point5" style="top: 50%; left: 50%;"></div>
+                <div class="calibrationPoint" id="point6" style="top: 50%; left: 90%;"></div>
+                <div class="calibrationPoint" id="point7" style="top: 90%; left: 10%;"></div>
+                <div class="calibrationPoint" id="point8" style="top: 90%; left: 50%;"></div>
+                <div class="calibrationPoint" id="point9" style="top: 90%; left: 90%;"></div>
+            </div>
+            <div>
+                <label for="cameraSelect">Select Camera: </label>
+                <select id="cameraSelect"></select>
+            </div>
+        </main>
+        <footer>
+            <p>&copy; 2024 AllGalaxy</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
