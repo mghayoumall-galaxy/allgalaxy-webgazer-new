@@ -427,8 +427,6 @@
                     // Store drawing score if needed
                     if (trialPointer < memoryImages.length) { // After memory task
                         trials[trialPointer].drawingScore = drawingScore;
-                    } else { // After search task
-                        trials[trialPointer - 1].drawingScore = drawingScore;
                     }
 
                     // Proceed to next task after a short delay
@@ -464,7 +462,7 @@
                 trialInfo.textContent = `Trial ${trialPointer + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`;
 
                 if (trial.taskType === 'memory') {
-                    // Handle memory trials separately
+                    // Handle memory trials separately if any additional exist
                     displayMemoryImagesForTrial(trialPointer);
                     trialPointer++;
                     return;
@@ -530,7 +528,7 @@
                 if (isTarget) {
                     clearTimeout(timer);
                     const reactionTime = Date.now() - trialStartTime;
-                    calibrationMessage.textContent = `Correct! Reaction Time: ${reactionTime} ms. Preparing for Drawing Task...`;
+                    calibrationMessage.textContent = `Correct! Reaction Time: ${reactionTime} ms.`;
 
                     // Store trial data
                     trials[trialIndex].reactionTime = reactionTime;
@@ -538,9 +536,9 @@
                     allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
                     gazeData = []; // Reset for next trial
 
-                    // Prompt for drawing task after search trial
+                    // Proceed to next trial automatically after a short delay
                     setTimeout(() => {
-                        showDrawingSection('search');
+                        startNextTrial();
                     }, 1000);
                 } else {
                     calibrationMessage.textContent = 'Incorrect target. Try again!';
@@ -558,9 +556,9 @@
                     allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
                     gazeData = []; // Reset for next trial
 
-                    // Proceed to drawing task after time up
+                    // Proceed to next trial automatically after a short delay
                     setTimeout(() => {
-                        showDrawingSection('search');
+                        startNextTrial();
                     }, 1000);
                 }, searchTimeLimit);
             }
