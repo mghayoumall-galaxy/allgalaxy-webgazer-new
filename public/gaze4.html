@@ -89,15 +89,6 @@
             transform: scale(1.1);
         }
 
-        .target-ring-upward {
-            border-color: red;
-            font-size: 2em;
-        }
-
-        .distractor-ring {
-            border-color: black;
-        }
-
         /* Calibration Message */
         #calibrationMessage {
             margin-top: 10px;
@@ -498,19 +489,15 @@
                     if (taskType === 'serial') {
                         // Serial Search: Target has different orientation
                         if (i === targetPosition) {
-                            ring.classList.add('target-ring-upward');
                             ring.textContent = '↓'; // Downward for target
                         } else {
-                            ring.classList.add('distractor-ring');
                             ring.textContent = '↑'; // Upward for distractors
                         }
                     } else if (taskType === 'popout') {
                         // Pop-out Search: Target has different orientation
                         if (i === targetPosition) {
-                            ring.classList.add('target-ring-upward');
                             ring.textContent = '↓'; // Downward for target
                         } else {
-                            ring.classList.add('distractor-ring');
                             ring.textContent = '↑'; // Upward for distractors
                         }
                     }
