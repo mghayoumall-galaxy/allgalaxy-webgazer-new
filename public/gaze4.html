@@ -244,7 +244,7 @@
         <!-- Drawing Upload Section -->
         <div id="drawing-section">
             <h2>Drawing Task</h2>
-            <p>Please draw the target you found or the images you memorized on a piece of paper.</p>
+            <p id="drawing-instruction">Please draw the target you found or the images you memorized on a piece of paper.</p>
             <input type="file" id="drawingUpload" accept="image/*">
             <button id="uploadButton">Upload Drawing</button>
             <div id="uploadStatus"></div>
@@ -274,6 +274,7 @@
             const uploadStatus = document.getElementById('uploadStatus');
             const resultsSection = document.getElementById('results-section');
             const resultsMessage = document.getElementById('results-message');
+            const drawingInstruction = document.getElementById('drawing-instruction');
 
             const searchTimeLimit = 60000; // 60 seconds per search trial
             let trialPointer = 0; // Pointer to track current trial
@@ -396,6 +397,9 @@
                 calibrationMessage.textContent = taskType === 'memory' ?
                     'Please draw the images you memorized on a piece of paper.' :
                     'Please draw the target you found on a piece of paper.';
+                drawingInstruction.textContent = taskType === 'memory' ?
+                    'Please draw the images you memorized on a piece of paper.' :
+                    'Please draw the target you found on a piece of paper.';
                 drawingSection.style.display = 'flex';
 
                 // Set the current task type for drawing
@@ -437,7 +441,7 @@
                         } else {
                             endExperiment();
                         }
-                    }, 3000);
+                    }, 1000);
                 };
                 reader.readAsDataURL(file);
             });
@@ -537,7 +541,7 @@
                     // Prompt for drawing task after search trial
                     setTimeout(() => {
                         showDrawingSection('search');
-                    }, 2000);
+                    }, 1000);
                 } else {
                     calibrationMessage.textContent = 'Incorrect target. Try again!';
                 }
@@ -557,7 +561,7 @@
                     // Proceed to drawing task after time up
                     setTimeout(() => {
                         showDrawingSection('search');
-                    }, 2000);
+                    }, 1000);
                 }, searchTimeLimit);
             }
 
