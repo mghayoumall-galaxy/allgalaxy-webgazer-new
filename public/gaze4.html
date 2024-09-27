@@ -351,7 +351,6 @@
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
                     webcamVideo.srcObject = stream;
-                    console.log("Camera started");
                 } catch (error) {
                     throw error;
                 }
@@ -364,7 +363,6 @@
                     const tracks = stream.getTracks();
                     tracks.forEach(track => track.stop());
                     webcamVideo.srcObject = null;
-                    console.log("Camera stopped");
                 }
             }
 
@@ -468,7 +466,6 @@
                     return;
                 }
 
-                console.log(`Starting Trial ${trialPointer + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`);
                 createSearchTask(trial.taskType, trial.numberOfRings, trialPointer);
                 calibrationMessage.textContent = 'Please find the target as quickly as possible.';
                 trialStartTime = Date.now();
@@ -529,7 +526,6 @@
                 if (isTarget) {
                     clearTimeout(timer);
                     const reactionTime = Date.now() - trialStartTime;
-                    console.log(`Correct! Reaction Time: ${reactionTime} ms`);
                     calibrationMessage.textContent = `Correct! Reaction Time: ${reactionTime} ms. Preparing for Drawing Task...`;
 
                     // Store trial data
@@ -544,7 +540,6 @@
                     }, 2000);
                 } else {
                     calibrationMessage.textContent = 'Incorrect target. Try again!';
-                    console.log('Incorrect target clicked.');
                 }
             }
 
@@ -552,7 +547,6 @@
             function startTimer(trialIndex) {
                 timer = setTimeout(() => {
                     calibrationMessage.textContent = 'Time is up! Proceeding to the next task...';
-                    console.log('Time is up for Trial', trialIndex + 1);
 
                     // Store trial data with null reaction time
                     trials[trialIndex].reactionTime = null;
@@ -614,7 +608,10 @@
             // Disable WebGazer’s built-in UI
             webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
             // Hide WebGazer's red dot if still visible
-            document.getElementById('webgazerVideoFeed')?.style.display = 'none';
+            const webgazerVideoFeed = document.getElementById('webgazerVideoFeed');
+            if (webgazerVideoFeed) {
+                webgazerVideoFeed.style.display = 'none';
+            }
 
             // Feature Extraction Function
             function extractFeatures(allGazeData, trials, targetPositions) {
@@ -638,8 +635,8 @@
 
             // Feature Extraction Implementations
 
-            function computePupilSizeModulation(pupilSizes) {
-                // Calculate the standard deviation of pupil sizes
+            function computePupilSizeModulation(allGazeData) {
+                const pupilSizes = allGazeData.map(d => d.pupilSize).filter(p => p !== null);
                 if (pupilSizes.length === 0) return 0;
                 const mean = pupilSizes.reduce((a, b) => a + b, 0) / pupilSizes.length;
                 const variance = pupilSizes.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / pupilSizes.length;
@@ -647,7 +644,6 @@
             }
 
             function computeSaccadicLatency(trials) {
-                // Calculate the average time to first saccade across trials
                 const saccadicLatencies = trials.filter(t => t.taskType !== 'memory').map(trial => {
                     return computeSaccadicLatencySingle(trial.gazeData);
                 }).filter(latency => latency !== null);
@@ -655,11 +651,10 @@
             }
 
             function computeSaccadicLatencySingle(gazeData) {
-                // Define saccade as a rapid movement between two points
-                const velocityThreshold = 1000; // pixels per second, adjust as needed
+                const velocityThreshold = 1000; // pixels per second
                 for (let i = 1; i < gazeData.length; i++) {
                     const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue; // Prevent division by zero
+                    if (dt === 0) continue;
                     const dx = gazeData[i].x - gazeData[i - 1].x;
                     const dy = gazeData[i].y - gazeData[i - 1].y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -668,18 +663,15 @@
                         return gazeData[i].timestamp; // Time to first saccade
                     }
                 }
-                return null; // No saccade detected
+                return null;
             }
 
             function computeSmoothPursuitGain(gazeData) {
                 // Placeholder: Implement based on your specific definition
-                // Smooth pursuit typically involves tracking moving targets, which isn't the case here
-                // Returning 0 as placeholder
                 return 0;
             }
 
             function computeSaccadicAccuracy(trials, targetPositions) {
-                // Calculate the average accuracy of saccades towards the target
                 const accuracies = trials.filter(t => t.taskType !== 'memory').map((trial, index) => {
                     return computeSaccadicAccuracySingle(trial.gazeData, index, targetPositions);
                 }).filter(acc => acc !== null);
@@ -690,7 +682,6 @@
                 const targetPosition = targetPositions[trialIndex];
                 if (targetPosition === undefined || targetPosition === null) return 0;
 
-                // Map targetPosition to screen coordinates
                 const targetCoords = mapPositionToCoordinates(targetPosition, trials[trialIndex].numberOfRings);
                 if (!targetCoords) return 0;
 
@@ -698,13 +689,11 @@
                 if (!lastGaze) return 0;
 
                 const distance = Math.sqrt(Math.pow(lastGaze.x - targetCoords.x, 2) + Math.pow(lastGaze.y - targetCoords.y, 2));
-                const accuracy = distance < 50 ? 1 : 0; // Assuming within 50 pixels is accurate
+                const accuracy = distance < 50 ? 1 : 0; // Within 50 pixels is accurate
                 return accuracy;
             }
 
             function computeFixationDuration(allGazeData) {
-                // Identify fixations as periods with minimal movement
-                // For simplicity, we'll calculate the average duration between gaze points that are close together
                 let fixationDurations = [];
                 let currentFixationStart = null;
                 let currentFixationEnd = null;
@@ -734,7 +723,6 @@
                     }
                 }
 
-                // Add the last fixation
                 const finalDuration = currentFixationEnd - currentFixationStart;
                 if (finalDuration >= minFixationDuration) {
                     fixationDurations.push(finalDuration);
@@ -746,7 +734,6 @@
             }
 
             function computeSearchTimeSerial(trials, taskType) {
-                // Calculate the average reaction time for serial search tasks
                 const serialTrials = trials.filter(trial => trial.taskType === taskType && trial.reactionTime !== null);
                 if (serialTrials.length === 0) return 0;
                 const totalReactionTime = serialTrials.reduce((a, b) => a + b.reactionTime, 0);
@@ -754,13 +741,12 @@
             }
 
             function computeNumberOfSaccades(gazeData) {
-                // Define a saccade as a rapid movement exceeding a velocity threshold
                 const velocityThreshold = 1000; // pixels per second
                 let saccadeCount = 0;
 
                 for (let i = 1; i < gazeData.length; i++) {
                     const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue; // Prevent division by zero
+                    if (dt === 0) continue;
                     const dx = gazeData[i].x - gazeData[i - 1].x;
                     const dy = gazeData[i].y - gazeData[i - 1].y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -780,7 +766,7 @@
 
                 for (let i = 1; i < gazeData.length; i++) {
                     const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue; // Prevent division by zero
+                    if (dt === 0) continue;
                     const dx = gazeData[i].x - gazeData[i - 1].x;
                     const dy = gazeData[i].y - gazeData[i - 1].y;
                     const distance = Math.sqrt(dx * dx + dy * dy);
@@ -795,7 +781,6 @@
             }
 
             function computePupilDilationRate(gazeData) {
-                // Calculate the rate of pupil size change
                 const pupilSizes = gazeData.map(d => d.pupilSize).filter(p => p !== null);
                 if (pupilSizes.length < 2) return 0;
 
@@ -808,7 +793,6 @@
             }
 
             function computeBlinkRate(gazeData) {
-                // Estimate blink rate based on missing pupil size data
                 let blinkCount = 0;
                 for (let i = 1; i < gazeData.length; i++) {
                     if (gazeData[i].pupilSize === null && gazeData[i - 1].pupilSize !== null) {
@@ -819,7 +803,6 @@
             }
 
             function computeGazeEntropy(gazeData) {
-                // Calculate entropy based on gaze distribution
                 const gridSize = 50; // Define grid cell size
                 const grid = {};
                 gazeData.forEach(point => {
@@ -839,7 +822,6 @@
             }
 
             function computeScanpathLength(gazeData) {
-                // Calculate the total distance covered by the gaze
                 let totalDistance = 0;
                 for (let i = 1; i < gazeData.length; i++) {
                     const dx = gazeData[i].x - gazeData[i - 1].x;
@@ -851,7 +833,6 @@
 
             function computeGazeTransitionPatterns(gazeData) {
                 // Placeholder: Implement based on specific transition patterns
-                // Returning 0 as placeholder
                 return 0;
             }
 
@@ -869,26 +850,11 @@
             // Make Prediction using TensorFlow.js Model
             async function makePrediction(features) {
                 try {
-                    console.log("Loading model...");
                     const model = await tf.loadLayersModel('./model.json'); // Ensure the model.json is correctly hosted
-                    console.log('Model loaded successfully');
-
-                    // Normalize or preprocess features as required by your model
-                    // Example: Assuming features need to be normalized between 0 and 1
-                    // Adjust normalization based on your model's training
-                    const normalizedFeatures = features.map(feature => feature / 100); // Placeholder normalization
-
+                    const normalizedFeatures = features.map(feature => feature / 100); // Adjust normalization as needed
                     const inputTensor = tf.tensor2d([normalizedFeatures]);
-
-                    // Make prediction
                     const prediction = model.predict(inputTensor);
                     const predictedClass = prediction.argMax(1).dataSync()[0]; // Assuming classification
-
-                    console.log("Predicted value:", predictedClass);
-
-                    // Redirect to gaze5.html with prediction result
-                    // You can pass the prediction via URL parameters or localStorage
-                    // Here, we'll use localStorage
                     localStorage.setItem('prediction', predictedClass);
                     window.location.href = 'gaze5.html';
                 } catch (error) {
@@ -905,7 +871,6 @@
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
                 // Implement data saving logic here, such as sending data to a server
-                // For security reasons, browsers may restrict certain actions during beforeunload
             });
         });
     </script>
