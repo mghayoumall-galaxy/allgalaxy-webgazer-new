@@ -5,8 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eye Movement Data Collection & Cognitive Assessment</title>
-    <!-- TensorFlow.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <!-- TensorFlow.js (Removed since prediction is done in gaze5.html) -->
     <!-- WebGazer for Eye Tracking -->
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <!-- Chart.js for Future Enhancements (Optional) -->
@@ -300,7 +299,7 @@
             <div id="uploadStatus"></div>
         </div>
 
-        <!-- Results Section -->
+        <!-- Results Section (Not used in gaze4.html, kept for structure) -->
         <div id="results-section">
             <h2>Assessment Complete</h2>
             <p id="results-message">Processing your data...</p>
@@ -659,23 +658,30 @@
                 calibrationMessage.innerHTML = `
                     <p>Correct Answers: ${correctCount}</p>
                     <p>Wrong Answers: ${wrongCount}</p>
-                    <p>Data Collection complete. Processing results...</p>
+                    <p>Data Collection complete. Preparing results...</p>
                 `;
                 trialInfo.textContent = '';
                 stopCamera();
-                showResultsSection();
+                storeAndRedirect();
             }
 
-            // Show Results Section and Process Data
-            function showResultsSection() {
-                resultsSection.style.display = 'flex';
-                resultsMessage.textContent = 'Processing your data... Please wait.';
+            // Store Data in localStorage and Redirect to gaze5.html
+            function storeAndRedirect() {
+                // Store comprehensive experiment data
+                const experimentData = {
+                    trials: trials,
+                    allGazeData: allGazeData,
+                    targetPositions: targetPositions,
+                    correctCount: correctCount,
+                    wrongCount: wrongCount
+                    // Prediction will be handled in gaze5.html
+                };
+                localStorage.setItem('experimentData', JSON.stringify(experimentData));
 
-                // Extract features from allGazeData
-                const features = extractFeatures(allGazeData, trials, targetPositions);
-
-                // Make prediction using TensorFlow.js model
-                makePrediction(features);
+                // Redirect to gaze5.html after a short delay
+                setTimeout(() => {
+                    window.location.href = 'gaze5.html';
+                }, 2000);
             }
 
             // Shuffle array in-place using Fisher-Yates algorithm
@@ -701,8 +707,8 @@
                 });
             }).begin();
 
-            // Disable WebGazer’s built-in UI
-            webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+            // Disable WebGazer’s built-in UI and hide gaze dot
+            webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false).setGazeDotVisible(false);
             // Additionally, ensure no other UI elements are visible
             const hideElements = ['webgazerVideoFeed', 'webgazerFaceOverlay', 'webgazerFaceFeedbackBox'];
             hideElements.forEach(id => {
@@ -712,289 +718,7 @@
                 }
             });
 
-            // Feature Extraction Function
-            function extractFeatures(allGazeData, trials, targetPositions) {
-                return {
-                    pupilSizeModulation: computePupilSizeModulation(allGazeData),
-                    saccadicLatency: computeSaccadicLatency(trials),
-                    smoothPursuitGain: computeSmoothPursuitGain(allGazeData),
-                    saccadicAccuracy: computeSaccadicAccuracy(trials, targetPositions),
-                    fixationDuration: computeFixationDuration(allGazeData),
-                    searchTimeSerial: computeSearchTimeSerial(trials, 'serial'),
-                    numberOfSaccades: computeNumberOfSaccades(allGazeData),
-                    averageSaccadeLength: computeAverageSaccadeLength(allGazeData),
-                    pupilDilationRate: computePupilDilationRate(allGazeData),
-                    blinkRate: computeBlinkRate(allGazeData),
-                    gazeEntropy: computeGazeEntropy(allGazeData),
-                    scanpathLength: computeScanpathLength(allGazeData),
-                    gazeTransitionPatterns: computeGazeTransitionPatterns(allGazeData)
-                };
-            }
-
-            // Feature Extraction Implementations
-
-            function computePupilSizeModulation(allGazeData) {
-                const pupilSizes = allGazeData.map(d => d.pupilSize).filter(p => p !== null);
-                if (pupilSizes.length === 0) return 0;
-                const mean = pupilSizes.reduce((a, b) => a + b, 0) / pupilSizes.length;
-                const variance = pupilSizes.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / pupilSizes.length;
-                return Math.sqrt(variance);
-            }
-
-            function computeSaccadicLatency(trials) {
-                const saccadicLatencies = trials.filter(t => t.taskType !== 'memory').map(trial => {
-                    return computeSaccadicLatencySingle(trial.gazeData);
-                }).filter(latency => latency !== null);
-                return saccadicLatencies.length > 0 ? (saccadicLatencies.reduce((a, b) => a + b, 0) / saccadicLatencies.length) : 0;
-            }
-
-            function computeSaccadicLatencySingle(gazeData) {
-                const velocityThreshold = 1000; // pixels per second
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue;
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const velocity = distance / dt;
-                    if (velocity > velocityThreshold) {
-                        return gazeData[i].timestamp; // Time to first saccade
-                    }
-                }
-                return null;
-            }
-
-            function computeSmoothPursuitGain(gazeData) {
-                // Placeholder: Implement based on your specific definition
-                return 0;
-            }
-
-            function computeSaccadicAccuracy(trials, targetPositions) {
-                const accuracies = trials.filter(t => t.taskType !== 'memory').map((trial, index) => {
-                    return computeSaccadicAccuracySingle(trial.gazeData, index, targetPositions);
-                }).filter(acc => acc !== null);
-                return accuracies.length > 0 ? (accuracies.reduce((a, b) => a + b, 0) / accuracies.length) : 0;
-            }
-
-            function computeSaccadicAccuracySingle(gazeData, trialIndex, targetPositions) {
-                const targetPosition = targetPositions[trialIndex];
-                if (targetPosition === undefined || targetPosition === null) return 0;
-
-                const targetCoords = mapPositionToCoordinates(targetPosition, trials[trialIndex].numberOfRings);
-                if (!targetCoords) return 0;
-
-                const lastGaze = gazeData[gazeData.length - 1];
-                if (!lastGaze) return 0;
-
-                const distance = Math.sqrt(Math.pow(lastGaze.x - targetCoords.x, 2) + Math.pow(lastGaze.y - targetCoords.y, 2));
-                const accuracy = distance < 50 ? 1 : 0; // Within 50 pixels is accurate
-                return accuracy;
-            }
-
-            function computeFixationDuration(allGazeData) {
-                let fixationDurations = [];
-                let currentFixationStart = null;
-                let currentFixationEnd = null;
-                const fixationThreshold = 50; // pixels
-                const minFixationDuration = 100; // milliseconds
-
-                for (let i = 0; i < allGazeData.length; i++) {
-                    const point = allGazeData[i];
-                    if (i === 0) {
-                        currentFixationStart = point.timestamp;
-                        currentFixationEnd = point.timestamp;
-                        continue;
-                    }
-
-                    const prevPoint = allGazeData[i - 1];
-                    const distance = Math.sqrt(Math.pow(point.x - prevPoint.x, 2) + Math.pow(point.y - prevPoint.y, 2));
-
-                    if (distance < fixationThreshold) {
-                        currentFixationEnd = point.timestamp;
-                    } else {
-                        const duration = currentFixationEnd - currentFixationStart;
-                        if (duration >= minFixationDuration) {
-                            fixationDurations.push(duration);
-                        }
-                        currentFixationStart = point.timestamp;
-                        currentFixationEnd = point.timestamp;
-                    }
-                }
-
-                const finalDuration = currentFixationEnd - currentFixationStart;
-                if (finalDuration >= minFixationDuration) {
-                    fixationDurations.push(finalDuration);
-                }
-
-                if (fixationDurations.length === 0) return 0;
-                const averageFixationDuration = fixationDurations.reduce((a, b) => a + b, 0) / fixationDurations.length;
-                return averageFixationDuration;
-            }
-
-            function computeSearchTimeSerial(trials, taskType) {
-                const serialTrials = trials.filter(trial => trial.taskType === taskType && trial.reactionTime !== null);
-                if (serialTrials.length === 0) return 0;
-                const totalReactionTime = serialTrials.reduce((a, b) => a + b.reactionTime, 0);
-                return totalReactionTime / serialTrials.length;
-            }
-
-            function computeNumberOfSaccades(gazeData) {
-                const velocityThreshold = 1000; // pixels per second
-                let saccadeCount = 0;
-
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue;
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const velocity = distance / dt;
-                    if (velocity > velocityThreshold) {
-                        saccadeCount++;
-                    }
-                }
-
-                return saccadeCount;
-            }
-
-            function computeAverageSaccadeLength(gazeData) {
-                const velocityThreshold = 1000; // pixels per second
-                let totalDistance = 0;
-                let saccadeCount = 0;
-
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue;
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const velocity = distance / dt;
-                    if (velocity > velocityThreshold) {
-                        totalDistance += distance;
-                        saccadeCount++;
-                    }
-                }
-
-                return saccadeCount > 0 ? totalDistance / saccadeCount : 0;
-            }
-
-            function computePupilDilationRate(gazeData) {
-                const pupilSizes = gazeData.map(d => d.pupilSize).filter(p => p !== null);
-                if (pupilSizes.length < 2) return 0;
-
-                let totalChange = 0;
-                for (let i = 1; i < pupilSizes.length; i++) {
-                    totalChange += Math.abs(pupilSizes[i] - pupilSizes[i - 1]);
-                }
-
-                return pupilSizes.length > 1 ? totalChange / (pupilSizes.length - 1) : 0;
-            }
-
-            function computeBlinkRate(gazeData) {
-                let blinkCount = 0;
-                for (let i = 1; i < gazeData.length; i++) {
-                    if (gazeData[i].pupilSize === null && gazeData[i - 1].pupilSize !== null) {
-                        blinkCount++;
-                    }
-                }
-                return blinkCount;
-            }
-
-            function computeGazeEntropy(gazeData) {
-                const gridSize = 50; // Define grid cell size
-                const grid = {};
-                gazeData.forEach(point => {
-                    const x = Math.floor(point.x / gridSize);
-                    const y = Math.floor(point.y / gridSize);
-                    const key = `${x},${y}`;
-                    grid[key] = (grid[key] || 0) + 1;
-                });
-
-                const totalPoints = gazeData.length;
-                let entropy = 0;
-                for (let key in grid) {
-                    const p = grid[key] / totalPoints;
-                    entropy -= p * Math.log2(p);
-                }
-                return entropy;
-            }
-
-            function computeScanpathLength(gazeData) {
-                let totalDistance = 0;
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    totalDistance += Math.sqrt(dx * dx + dy * dy);
-                }
-                return totalDistance;
-            }
-
-            function computeGazeTransitionPatterns(gazeData) {
-                // Placeholder: Implement based on specific transition patterns
-                return 0;
-            }
-
-            // Map ring index to screen coordinates (simplified)
-            function mapPositionToCoordinates(index, totalRings) {
-                const angle = (2 * Math.PI / totalRings) * index;
-                const radius = 200; // Distance from center in pixels
-                const centerX = window.innerWidth / 2;
-                const centerY = window.innerHeight / 2;
-                const x = centerX + radius * Math.cos(angle);
-                const y = centerY + radius * Math.sin(angle);
-                return { x, y };
-            }
-
-            // Make Prediction using TensorFlow.js Model
-            async function makePrediction(features) {
-                try {
-                    // Adjust the path to 'model.json' based on your directory structure
-                    // If your model is in a 'models' folder, use './models/model.json'
-                    const model = await tf.loadLayersModel('./model.json');
-
-                    // Verify model is loaded
-                    if (!model) {
-                        throw new Error('Model not loaded correctly.');
-                    }
-
-                    // Normalize or preprocess features as required by your model
-                    // Example: Assuming features need to be normalized between 0 and 1
-                    // Adjust normalization based on your model's training
-                    // IMPORTANT: Ensure that this matches your model's expected input
-                    const normalizedFeatures = Object.values(features).map(feature => feature / 100); // Placeholder normalization
-
-                    // Create tensor from features
-                    const inputTensor = tf.tensor2d([normalizedFeatures]);
-
-                    // Make prediction
-                    const prediction = model.predict(inputTensor);
-                    const predictedClass = prediction.argMax(1).dataSync()[0]; // Assuming classification
-
-                    // Check if prediction is valid
-                    if (predictedClass === undefined || predictedClass === null) {
-                        throw new Error('Invalid prediction result.');
-                    }
-
-                    console.log('Predicted Class:', predictedClass); // For debugging
-
-                    // Store comprehensive experiment data
-                    const experimentData = {
-                        trials: trials,
-                        allGazeData: allGazeData,
-                        targetPositions: targetPositions,
-                        correctCount: correctCount,
-                        wrongCount: wrongCount,
-                        prediction: predictedClass
-                    };
-                    localStorage.setItem('experimentData', JSON.stringify(experimentData));
-
-                    // Redirect to gaze5.html with prediction result
-                    window.location.href = 'gaze5.html';
-                } catch (error) {
-                    console.error('Prediction error:', error);
-                    resultsMessage.textContent = 'An error occurred during prediction. Please try again.';
-                }
-            }
+            // Feature Extraction Function (Removed from gaze4.html)
 
             // Helper Function to Capitalize First Letter
             function capitalizeFirstLetter(string) {
