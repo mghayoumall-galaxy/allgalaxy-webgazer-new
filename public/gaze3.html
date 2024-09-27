@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calibration - Eye Movement Data Collection</title>
+    <!-- WebGazer for Eye Tracking -->
+    <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <style>
         /* Basic Reset */
         body, html {
@@ -76,13 +78,14 @@
 
         /* Calibration Points */
         .calibrationPoint {
-            width: 15px;
-            height: 15px;
+            width: 20px;
+            height: 20px;
             background-color: #e63946;
             border-radius: 50%;
             position: absolute;
             visibility: hidden;
             transition: visibility 0.3s ease-in-out;
+            transform: translate(-50%, -50%);
         }
 
         /* Calibration Message */
@@ -110,7 +113,7 @@
         <main>
             <!-- Video Frame for Camera -->
             <div id="videoFrame">
-                <video id="videoElement" autoplay></video>
+                <video id="videoElement" autoplay playsinline></video>
             </div>
             
             <div id="calibrationMessage">Please follow the red dots on the screen to calibrate.</div>
@@ -138,12 +141,17 @@
             const videoElement = document.getElementById('videoElement');
             const calibrationPoints = document.querySelectorAll('.calibrationPoint');
             const calibrationMessage = document.getElementById('calibrationMessage');
+            const totalPoints = calibrationPoints.length;
+            let currentPoint = 0;
 
             // Start the camera
             startCamera();
 
-            // Start the calibration process
-            startCalibration();
+            // Initialize WebGazer after the video starts playing
+            videoElement.addEventListener('loadedmetadata', () => {
+                initializeWebGazer();
+                startCalibration();
+            });
 
             function startCamera() {
                 navigator.mediaDevices.getUserMedia({ video: true })
@@ -158,39 +166,62 @@
 
             function stopCamera() {
                 const stream = videoElement.srcObject;
-                const tracks = stream.getTracks();
+                if (stream) {
+                    const tracks = stream.getTracks();
+                    tracks.forEach(track => track.stop());
+                    videoElement.srcObject = null;
+                }
+            }
 
-                tracks.forEach(track => {
-                    track.stop();
+            function initializeWebGazer() {
+                webgazer.setGazeListener(function (data, elapsedTime) {
+                    if (data == null) {
+                        return;
+                    }
+                    // You can log gaze data here for debugging
+                    // console.log(`Gaze Data - X: ${data.x}, Y: ${data.y}, Time: ${elapsedTime}`);
+                }).begin();
+
+                // Hide all WebGazer UI elements to prevent distraction
+                webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+                // Additionally, ensure no other UI elements are visible
+                const hideElements = ['webgazerVideoFeed', 'webgazerFaceOverlay', 'webgazerFaceFeedbackBox'];
+                hideElements.forEach(id => {
+                    const element = document.getElementById(id);
+                    if (element) {
+                        element.style.display = 'none';
+                    }
                 });
-
-                videoElement.srcObject = null;
             }
 
             function startCalibration() {
                 calibrationMessage.textContent = 'Calibration in progress...';
-                showCalibrationPoint(0);
+                showNextCalibrationPoint();
             }
 
-            function showCalibrationPoint(index) {
-                if (index >= calibrationPoints.length) {
+            function showNextCalibrationPoint() {
+                if (currentPoint >= totalPoints) {
                     finishCalibration();
                     return;
                 }
 
-                calibrationPoints[index].style.visibility = 'visible';
+                const point = calibrationPoints[currentPoint];
+                point.style.visibility = 'visible';
+                
+                // Briefly show the point before hiding it
                 setTimeout(() => {
-                    calibrationPoints[index].style.visibility = 'hidden';
-                    showCalibrationPoint(index + 1);
-                }, 1000); // Adjust the time interval as needed
+                    point.style.visibility = 'hidden';
+                    currentPoint++;
+                    showNextCalibrationPoint();
+                }, 1000); // Adjust the time interval as needed (e.g., 1000ms)
             }
 
             function finishCalibration() {
                 stopCamera(); // Stop the camera when calibration is complete
                 calibrationMessage.textContent = 'Calibration complete. Redirecting...';
                 setTimeout(() => {
-                    window.location.href = 'gaze4.html'; // Redirect to the next page after calibration
-                }, 2000);
+                    window.location.href = 'gaze4.html'; // Redirect to the visual task and assessment page
+                }, 2000); // Adjust the delay as needed
             }
         });
     </script>
