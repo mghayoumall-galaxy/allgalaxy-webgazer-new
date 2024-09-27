@@ -190,6 +190,11 @@
             color: #28a745;
         }
 
+        /* Hide WebGazer's Red Dot */
+        #webgazerVideoFeed {
+            display: none !important;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .ring {
@@ -271,7 +276,7 @@
             const resultsMessage = document.getElementById('results-message');
 
             const searchTimeLimit = 60000; // 60 seconds per search trial
-            let currentTrial = 0;
+            let trialPointer = 0; // Pointer to track current trial
             let trials = [];
             let targetPositions = []; // To store target positions for accuracy calculation
 
@@ -325,9 +330,6 @@
 
             let timer;
             let trialStartTime;
-
-            // Initialize current trial pointer
-            let trialPointer = 0;
 
             // Start Button Event Listener
             startButton.addEventListener('click', function () {
@@ -457,15 +459,32 @@
                 }
 
                 const trial = trials[trialPointer];
-                console.log(`Starting Trial ${trialPointer + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`);
                 trialInfo.textContent = `Trial ${trialPointer + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`;
 
+                if (trial.taskType === 'memory') {
+                    // Handle memory trials separately
+                    displayMemoryImagesForTrial(trialPointer);
+                    trialPointer++;
+                    return;
+                }
+
+                console.log(`Starting Trial ${trialPointer + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`);
                 createSearchTask(trial.taskType, trial.numberOfRings, trialPointer);
                 calibrationMessage.textContent = 'Please find the target as quickly as possible.';
                 trialStartTime = Date.now();
 
                 startTimer(trialPointer);
                 trialPointer++;
+            }
+
+            // Display Memory Images for Trials (if any additional memory tasks exist)
+            function displayMemoryImagesForTrial(trialIndex) {
+                // Assuming no additional memory tasks in the search phase
+                // If there are, implement accordingly
+                // For now, proceed to the next trial
+                setTimeout(() => {
+                    startNextTrial();
+                }, 1000);
             }
 
             // Create Search Task
@@ -519,7 +538,7 @@
                     allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
                     gazeData = []; // Reset for next trial
 
-                    // Prompt for a drawing task after search trial
+                    // Prompt for drawing task after search trial
                     setTimeout(() => {
                         showDrawingSection('search');
                     }, 2000);
@@ -594,6 +613,8 @@
 
             // Disable WebGazer’s built-in UI
             webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+            // Hide WebGazer's red dot if still visible
+            document.getElementById('webgazerVideoFeed')?.style.display = 'none';
 
             // Feature Extraction Function
             function extractFeatures(allGazeData, trials, targetPositions) {
