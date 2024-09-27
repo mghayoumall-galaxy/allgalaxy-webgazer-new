@@ -83,11 +83,12 @@
             align-items: center;
             font-size: 1.5em;
             cursor: pointer;
-            transition: transform 0.2s;
+            transition: transform 0.2s, background-color 0.2s;
         }
 
         .ring:hover {
             transform: scale(1.1);
+            background-color: #f0f2f5;
         }
 
         /* Calibration Message */
@@ -270,10 +271,14 @@
             let trials = [];
             let targetPositions = []; // To store target positions for accuracy calculation
 
+            // Counters for correct and wrong answers
+            let correctCount = 0;
+            let wrongCount = 0;
+
             // Configuration based on the research paper
             const taskTypes = ['serial', 'popout'];
             const numberOfRingsOptions = [4, 48];
-            const trialsPerCombination = 2; // Reduced to have total of 10 search trials (2 task types * 2 ring options * 2 trials each = 8; adjust as needed)
+            const trialsPerCombination = 2; // Adjust to have a total of 10 search trials
 
             // Initialize trials
             const memoryImages = [
@@ -493,15 +498,19 @@
                         // Serial Search: All distractors point upward, one target points downward
                         if (i === targetPosition) {
                             ring.textContent = '↓'; // Downward for target
+                            ring.style.backgroundColor = '#ffc107'; // Highlight target
                         } else {
                             ring.textContent = '↑'; // Upward for distractors
+                            ring.style.backgroundColor = '#f0f2f5';
                         }
                     } else if (taskType === 'popout') {
                         // Pop-out Search: All distractors point upward, one target points downward
                         if (i === targetPosition) {
                             ring.textContent = '↓'; // Downward for target
+                            ring.style.backgroundColor = '#ffc107'; // Highlight target
                         } else {
                             ring.textContent = '↑'; // Upward for distractors
+                            ring.style.backgroundColor = '#f0f2f5';
                         }
                     }
 
@@ -517,6 +526,9 @@
                     const reactionTime = Date.now() - trialStartTime;
                     calibrationMessage.textContent = `Correct! Reaction Time: ${reactionTime} ms.`;
 
+                    // Update correct count
+                    correctCount++;
+
                     // Store trial data
                     trials[trialIndex].reactionTime = reactionTime;
                     trials[trialIndex].gazeData = gazeData.slice(); // Copy current gaze data
@@ -528,14 +540,28 @@
                         startNextTrial();
                     }, 1000);
                 } else {
-                    calibrationMessage.textContent = 'Incorrect target. Try again!';
+                    calibrationMessage.textContent = 'Incorrect target. Recording and moving to next task.';
+                    
+                    // Update wrong count
+                    wrongCount++;
+
+                    // Store trial data with incorrect flag
+                    trials[trialIndex].reactionTime = null; // No reaction time for incorrect
+                    trials[trialIndex].gazeData = gazeData.slice(); // Copy current gaze data
+                    allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
+                    gazeData = []; // Reset for next trial
+
+                    // Proceed to next trial automatically after a short delay
+                    setTimeout(() => {
+                        startNextTrial();
+                    }, 1000);
                 }
             }
 
             // Start Timer for Trial
             function startTimer(trialIndex) {
                 timer = setTimeout(() => {
-                    calibrationMessage.textContent = 'Time is up! Proceeding to the next task...';
+                    calibrationMessage.textContent = 'Time is up! Recording and moving to next task...';
 
                     // Store trial data with null reaction time
                     trials[trialIndex].reactionTime = null;
@@ -554,7 +580,7 @@
             function endExperiment() {
                 taskContainer.innerHTML = '';
                 calibrationMessage.textContent = 'Data Collection complete. Processing results...';
-                trialInfo.textContent = '';
+                trialInfo.innerHTML = `<p>Correct Answers: ${correctCount}</p><p>Wrong Answers: ${wrongCount}</p>`;
                 stopCamera();
                 showResultsSection();
             }
@@ -856,12 +882,17 @@
                     const prediction = model.predict(inputTensor);
                     const predictedClass = prediction.argMax(1).dataSync()[0]; // Assuming classification
 
+                    // Check if prediction is valid
+                    if (predictedClass === undefined || predictedClass === null) {
+                        throw new Error('Invalid prediction result.');
+                    }
+
                     // Redirect to gaze5.html with prediction result
                     localStorage.setItem('prediction', predictedClass);
                     window.location.href = 'gaze5.html';
                 } catch (error) {
                     console.error('Prediction error:', error);
-                    resultsMessage.textContent = 'An error occurred during prediction.';
+                    resultsMessage.textContent = 'An error occurred during prediction. Please try again.';
                 }
             }
 
