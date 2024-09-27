@@ -7,6 +7,8 @@
     <title>Eye Movement Analysis Results</title>
     <!-- TensorFlow.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <!-- Chart.js for Visualizations -->
+    <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Basic Reset */
         body,
@@ -78,6 +80,13 @@
             transform: translateY(-2px);
         }
 
+        /* Chart Container */
+        #chart-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto 40px auto;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .container {
@@ -100,6 +109,10 @@
                 padding: 12px 25px;
                 font-size: 1em;
             }
+
+            #chart-container {
+                max-width: 100%;
+            }
         }
     </style>
 </head>
@@ -118,6 +131,11 @@
             <p id="advice">Please wait while we process your data...</p>
         </div>
 
+        <!-- Chart Container -->
+        <div id="chart-container">
+            <canvas id="resultsChart" width="400" height="200" style="max-width: 100%;"></canvas>
+        </div>
+
         <a href="gaze4.html" class="btn">Start Again</a>
     </div>
 
@@ -125,6 +143,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const predictionResult = document.getElementById('predictionResult');
             const advice = document.getElementById('advice');
+            const resultsChartCtx = document.getElementById('resultsChart').getContext('2d');
 
             // Function to safely retrieve data from localStorage
             function getExperimentData() {
@@ -135,248 +154,105 @@
                 return null;
             }
 
-            // Function to extract features from gaze data
-            function extractFeatures(experimentData) {
-                const allGazeData = experimentData.allGazeData;
-                const trials = experimentData.trials;
-                const targetPositions = experimentData.targetPositions || [];
+            // Display Prediction Results
+            function displayResults(experimentData) {
+                const prediction = experimentData.prediction;
+                predictionResult.textContent = mapPredictionToText(prediction);
+                advice.textContent = getAdviceBasedOnPrediction(prediction);
 
-                // Compute the thirteen features as per your study
-                const features = [];
-                features.push(computePupilSizeModulation(allGazeData));
-                features.push(computeSaccadicLatency(trials));
-                features.push(computeSmoothPursuitGain(allGazeData));
-                features.push(computeSaccadicAccuracy(trials, targetPositions));
-                features.push(computeFixationDuration(allGazeData));
-                features.push(computeSearchTimeSerial(trials, 'serial'));
-                features.push(computeNumberOfSaccades(allGazeData));
-                features.push(computeAverageSaccadeLength(allGazeData));
-                features.push(computePupilDilationRate(allGazeData));
-                features.push(computeBlinkRate(allGazeData));
-                features.push(computeGazeEntropy(allGazeData));
-                features.push(computeScanpathLength(allGazeData));
-                features.push(computeGazeTransitionPatterns(allGazeData));
-                return features;
+                // Display Additional Metrics
+                displayMetrics(experimentData);
             }
 
-            // Feature Extraction Implementations
-
-            function computePupilSizeModulation(allGazeData) {
-                const pupilSizes = allGazeData.map(d => d.pupilSize).filter(p => p !== null);
-                if (pupilSizes.length === 0) return 0;
-                const mean = pupilSizes.reduce((a, b) => a + b, 0) / pupilSizes.length;
-                const variance = pupilSizes.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / pupilSizes.length;
-                return Math.sqrt(variance);
+            // Map Prediction to Meaningful Text
+            function mapPredictionToText(prediction) {
+                const predictionMap = {
+                    0: 'Low Cognitive Performance',
+                    1: 'Average Cognitive Performance',
+                    2: 'High Cognitive Performance'
+                    // Adjust based on your model's output classes
+                };
+                return predictionMap[prediction] || 'Unknown';
             }
 
-            function computeSaccadicLatency(trials) {
-                const saccadicLatencies = trials.filter(t => t.taskType !== 'memory').map(trial => {
-                    return computeSaccadicLatencySingle(trial.gazeData);
-                }).filter(latency => latency !== null);
-                return saccadicLatencies.length > 0 ? (saccadicLatencies.reduce((a, b) => a + b, 0) / saccadicLatencies.length) : 0;
-            }
-
-            function computeSaccadicLatencySingle(gazeData) {
-                const velocityThreshold = 1000; // pixels per second
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue;
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const velocity = distance / dt;
-                    if (velocity > velocityThreshold) {
-                        return gazeData[i].timestamp; // Time to first saccade
-                    }
+            // Provide Advice Based on Prediction
+            function getAdviceBasedOnPrediction(prediction) {
+                switch (prediction) {
+                    case 0:
+                        return 'It seems you may benefit from cognitive training exercises. Consider consulting a professional.';
+                    case 1:
+                        return 'Your cognitive performance is average. Keep engaging in mentally stimulating activities.';
+                    case 2:
+                        return 'Great job! Your cognitive performance is high. Continue maintaining your cognitive health.';
+                    default:
+                        return 'Unable to provide advice at this time.';
                 }
-                return null;
             }
 
-            function computeSmoothPursuitGain(gazeData) {
-                // Placeholder: Implement based on your specific definition
-                return 0;
-            }
+            // Display Metrics Using Chart.js
+            function displayMetrics(experimentData) {
+                const reactionTimes = experimentData.trials
+                    .filter(trial => trial.reactionTime !== null)
+                    .map(trial => trial.reactionTime);
 
-            function computeSaccadicAccuracy(trials, targetPositions) {
-                const accuracies = trials.filter(t => t.taskType !== 'memory').map((trial, index) => {
-                    return computeSaccadicAccuracySingle(trial.gazeData, index, targetPositions);
-                }).filter(acc => acc !== null);
-                return accuracies.length > 0 ? (accuracies.reduce((a, b) => a + b, 0) / accuracies.length) : 0;
-            }
+                const reactionTimeLabels = reactionTimes.map((rt, index) => `Trial ${index + 1}`);
 
-            function computeSaccadicAccuracySingle(gazeData, trialIndex, targetPositions) {
-                const targetPosition = targetPositions[trialIndex];
-                if (targetPosition === undefined || targetPosition === null) return 0;
+                const data = {
+                    labels: reactionTimeLabels,
+                    datasets: [{
+                        label: 'Reaction Time (ms)',
+                        data: reactionTimes,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                };
 
-                const targetCoords = mapPositionToCoordinates(targetPosition, trials[trialIndex].numberOfRings);
-                if (!targetCoords) return 0;
-
-                const lastGaze = gazeData[gazeData.length - 1];
-                if (!lastGaze) return 0;
-
-                const distance = Math.sqrt(Math.pow(lastGaze.x - targetCoords.x, 2) + Math.pow(lastGaze.y - targetCoords.y, 2));
-                const accuracy = distance < 50 ? 1 : 0; // Within 50 pixels is accurate
-                return accuracy;
-            }
-
-            function computeFixationDuration(allGazeData) {
-                let fixationDurations = [];
-                let currentFixationStart = null;
-                let currentFixationEnd = null;
-                const fixationThreshold = 50; // pixels
-                const minFixationDuration = 100; // milliseconds
-
-                for (let i = 0; i < allGazeData.length; i++) {
-                    const point = allGazeData[i];
-                    if (i === 0) {
-                        currentFixationStart = point.timestamp;
-                        currentFixationEnd = point.timestamp;
-                        continue;
-                    }
-
-                    const prevPoint = allGazeData[i - 1];
-                    const distance = Math.sqrt(Math.pow(point.x - prevPoint.x, 2) + Math.pow(point.y - prevPoint.y, 2));
-
-                    if (distance < fixationThreshold) {
-                        currentFixationEnd = point.timestamp;
-                    } else {
-                        const duration = currentFixationEnd - currentFixationStart;
-                        if (duration >= minFixationDuration) {
-                            fixationDurations.push(duration);
+                const config = {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Reaction Time (ms)'
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Trials'
+                                }
+                            }
+                        },
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Reaction Times Across Trials'
+                            }
                         }
-                        currentFixationStart = point.timestamp;
-                        currentFixationEnd = point.timestamp;
-                    }
-                }
+                    },
+                };
 
-                const finalDuration = currentFixationEnd - currentFixationStart;
-                if (finalDuration >= minFixationDuration) {
-                    fixationDurations.push(finalDuration);
-                }
-
-                if (fixationDurations.length === 0) return 0;
-                const averageFixationDuration = fixationDurations.reduce((a, b) => a + b, 0) / fixationDurations.length;
-                return averageFixationDuration;
+                new Chart(resultsChartCtx, config);
             }
 
-            function computeSearchTimeSerial(trials, taskType) {
-                const serialTrials = trials.filter(trial => trial.taskType === taskType && trial.reactionTime !== null);
-                if (serialTrials.length === 0) return 0;
-                const totalReactionTime = serialTrials.reduce((a, b) => a + b.reactionTime, 0);
-                return totalReactionTime / serialTrials.length;
+            // Main Execution
+            const experimentData = getExperimentData();
+            if (experimentData) {
+                displayResults(experimentData);
+            } else {
+                predictionResult.textContent = 'No data available.';
+                advice.textContent = 'Please complete the experiment first.';
+                // Optionally hide the chart container if no data is available
+                document.getElementById('chart-container').style.display = 'none';
             }
 
-            function computeNumberOfSaccades(gazeData) {
-                const velocityThreshold = 1000; // pixels per second
-                let saccadeCount = 0;
-
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue;
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const velocity = distance / dt;
-                    if (velocity > velocityThreshold) {
-                        saccadeCount++;
-                    }
-                }
-
-                return saccadeCount;
-            }
-
-            function computeAverageSaccadeLength(gazeData) {
-                const velocityThreshold = 1000; // pixels per second
-                let totalDistance = 0;
-                let saccadeCount = 0;
-
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue;
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const velocity = distance / dt;
-                    if (velocity > velocityThreshold) {
-                        totalDistance += distance;
-                        saccadeCount++;
-                    }
-                }
-
-                return saccadeCount > 0 ? totalDistance / saccadeCount : 0;
-            }
-
-            function computePupilDilationRate(gazeData) {
-                const pupilSizes = gazeData.map(d => d.pupilSize).filter(p => p !== null);
-                if (pupilSizes.length < 2) return 0;
-
-                let totalChange = 0;
-                for (let i = 1; i < pupilSizes.length; i++) {
-                    totalChange += Math.abs(pupilSizes[i] - pupilSizes[i - 1]);
-                }
-
-                return pupilSizes.length > 1 ? totalChange / (pupilSizes.length - 1) : 0;
-            }
-
-            function computeBlinkRate(gazeData) {
-                let blinkCount = 0;
-                for (let i = 1; i < gazeData.length; i++) {
-                    if (gazeData[i].pupilSize === null && gazeData[i - 1].pupilSize !== null) {
-                        blinkCount++;
-                    }
-                }
-                return blinkCount;
-            }
-
-            function computeGazeEntropy(gazeData) {
-                const gridSize = 50; // Define grid cell size
-                const grid = {};
-                gazeData.forEach(point => {
-                    const x = Math.floor(point.x / gridSize);
-                    const y = Math.floor(point.y / gridSize);
-                    const key = `${x},${y}`;
-                    grid[key] = (grid[key] || 0) + 1;
-                });
-
-                const totalPoints = gazeData.length;
-                let entropy = 0;
-                for (let key in grid) {
-                    const p = grid[key] / totalPoints;
-                    entropy -= p * Math.log2(p);
-                }
-                return entropy;
-            }
-
-            function computeScanpathLength(gazeData) {
-                let totalDistance = 0;
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    totalDistance += Math.sqrt(dx * dx + dy * dy);
-                }
-                return totalDistance;
-            }
-
-            function computeGazeTransitionPatterns(gazeData) {
-                // Placeholder: Implement based on specific transition patterns
-                return 0;
-            }
-
-            // Map ring index to screen coordinates (simplified)
-            function mapPositionToCoordinates(index, totalRings) {
-                const angle = (2 * Math.PI / totalRings) * index;
-                const radius = 200; // Distance from center in pixels
-                const centerX = window.innerWidth / 2;
-                const centerY = window.innerHeight / 2;
-                const x = centerX + radius * Math.cos(angle);
-                const y = centerY + radius * Math.sin(angle);
-                return { x, y };
-            }
-
-            // Ensure data is saved when the page is unloaded
-            window.addEventListener('beforeunload', function (e) {
-                // Data is already stored in localStorage; additional actions can be implemented here if needed
-            });
+            // Optional: Clear data after displaying
+            // localStorage.removeItem('experimentData');
         });
     </script>
 </body>
