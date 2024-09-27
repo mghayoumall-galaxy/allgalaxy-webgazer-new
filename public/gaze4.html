@@ -295,7 +295,8 @@
                     numberOfRings: 0,
                     reactionTime: null,
                     gazeData: [],
-                    image: memoryImages[i]
+                    image: memoryImages[i],
+                    drawingScore: null
                 });
             }
 
@@ -307,7 +308,8 @@
                             taskType: task,
                             numberOfRings: numRings,
                             reactionTime: null,
-                            gazeData: []
+                            gazeData: [],
+                            drawingScore: null
                         });
                     }
                 }
@@ -323,6 +325,9 @@
 
             let timer;
             let trialStartTime;
+
+            // Initialize current trial pointer
+            let trialPointer = 0;
 
             // Start Button Event Listener
             startButton.addEventListener('click', function () {
@@ -392,6 +397,9 @@
                     'Please draw the images you memorized on a piece of paper.' :
                     'Please draw the target you found on a piece of paper.';
                 drawingSection.style.display = 'flex';
+
+                // Set the current task type for drawing
+                drawingSection.dataset.taskType = taskType;
             }
 
             // Handle Drawing Upload
@@ -411,17 +419,20 @@
                     // Implement drawing scoring here
                     const drawingScore = scoreDrawing(file); // Placeholder function
                     calibrationMessage.textContent = `Drawing Score: ${drawingScore}/5`;
+
                     // Store drawing score if needed
-                    if (currentTrial > memoryImages.length) { // After search trials
-                        trials[currentTrial - 1].drawingScore = drawingScore;
-                    } else { // After memory tasks
-                        trials[currentTrial].drawingScore = drawingScore;
+                    if (trialPointer < memoryImages.length) { // After memory task
+                        trials[trialPointer].drawingScore = drawingScore;
+                    } else { // After search task
+                        trials[trialPointer - 1].drawingScore = drawingScore;
                     }
 
                     // Proceed to next task after a short delay
                     setTimeout(() => {
                         drawingSection.style.display = 'none';
-                        if (currentTrial < trials.length) {
+                        uploadStatus.innerHTML = '';
+                        drawingUpload.value = ''; // Reset file input
+                        if (trialPointer < trials.length) {
                             startNextTrial();
                         } else {
                             endExperiment();
@@ -440,21 +451,21 @@
 
             // Start the next trial (Visual Search)
             function startNextTrial() {
-                if (currentTrial >= trials.length) {
+                if (trialPointer >= trials.length) {
                     endExperiment();
                     return;
                 }
 
-                const trial = trials[currentTrial];
-                console.log(`Starting Trial ${currentTrial + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`);
-                trialInfo.textContent = `Trial ${currentTrial + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`;
+                const trial = trials[trialPointer];
+                console.log(`Starting Trial ${trialPointer + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`);
+                trialInfo.textContent = `Trial ${trialPointer + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`;
 
-                createSearchTask(trial.taskType, trial.numberOfRings, currentTrial);
+                createSearchTask(trial.taskType, trial.numberOfRings, trialPointer);
                 calibrationMessage.textContent = 'Please find the target as quickly as possible.';
                 trialStartTime = Date.now();
 
-                startTimer(currentTrial);
-                currentTrial++;
+                startTimer(trialPointer);
+                trialPointer++;
             }
 
             // Create Search Task
@@ -508,7 +519,7 @@
                     allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
                     gazeData = []; // Reset for next trial
 
-                    // Prompt for drawing task after search trial
+                    // Prompt for a drawing task after search trial
                     setTimeout(() => {
                         showDrawingSection('search');
                     }, 2000);
@@ -521,7 +532,7 @@
             // Start Timer for Trial
             function startTimer(trialIndex) {
                 timer = setTimeout(() => {
-                    calibrationMessage.textContent = 'Time is up! Proceeding to the next trial...';
+                    calibrationMessage.textContent = 'Time is up! Proceeding to the next task...';
                     console.log('Time is up for Trial', trialIndex + 1);
 
                     // Store trial data with null reaction time
@@ -772,7 +783,7 @@
                     totalChange += Math.abs(pupilSizes[i] - pupilSizes[i - 1]);
                 }
 
-                return totalChange / (pupilSizes.length - 1);
+                return pupilSizes.length > 1 ? totalChange / (pupilSizes.length - 1) : 0;
             }
 
             function computeBlinkRate(gazeData) {
@@ -834,11 +845,6 @@
                 return { x, y };
             }
 
-            // Get Target Position for Accuracy Calculation
-            function getTargetPosition(trialIndex) {
-                return targetPositions[trialIndex] || null;
-            }
-
             // Make Prediction using TensorFlow.js Model
             async function makePrediction(features) {
                 try {
@@ -859,20 +865,14 @@
 
                     console.log("Predicted value:", predictedClass);
 
-                    // Display prediction result
-                    displayPrediction(predictedClass);
+                    // Redirect to gaze5.html with prediction result
+                    // You can pass the prediction via URL parameters or localStorage
+                    // Here, we'll use localStorage
+                    localStorage.setItem('prediction', predictedClass);
+                    window.location.href = 'gaze5.html';
                 } catch (error) {
                     console.error('Prediction error:', error);
                     resultsMessage.textContent = 'An error occurred during prediction.';
-                }
-            }
-
-            // Display Prediction Result
-            function displayPrediction(predictedClass) {
-                if (predictedClass === 1) { // Assuming 1 indicates high risk
-                    resultsMessage.innerHTML = `<p style="color: red;"><strong>High Risk of Alzheimer's Detected.</strong></p>`;
-                } else { // Assuming 0 indicates low risk
-                    resultsMessage.innerHTML = `<p style="color: green;"><strong>No Significant Risk Detected.</strong></p>`;
                 }
             }
 
