@@ -281,21 +281,42 @@
             const trialsPerCombination = 10; // Total of 40 trials
 
             // Initialize trials
+            const memoryImages = [
+                'image1.jpg', // Replace with your actual image paths or URLs
+                'image2.jpg',
+                'image3.jpg',
+                'image4.jpg'
+            ];
+
+            // Add memory trials first
+            for (let i = 0; i < memoryImages.length; i++) {
+                trials.push({
+                    taskType: 'memory',
+                    numberOfRings: 0,
+                    reactionTime: null,
+                    gazeData: [],
+                    image: memoryImages[i]
+                });
+            }
+
+            // Add search trials
             for (let task of taskTypes) {
                 for (let numRings of numberOfRingsOptions) {
                     for (let i = 0; i < trialsPerCombination; i++) {
                         trials.push({
                             taskType: task,
                             numberOfRings: numRings,
-                            reactionTime: null, // To store reaction time
-                            gazeData: [] // To store gaze data for this trial
+                            reactionTime: null,
+                            gazeData: []
                         });
                     }
                 }
             }
 
-            // Shuffle trials to randomize the order
-            shuffleArray(trials);
+            // Shuffle search trials only
+            const searchTrials = trials.slice(memoryImages.length);
+            shuffleArray(searchTrials);
+            trials = trials.slice(0, memoryImages.length).concat(searchTrials);
 
             // Array to store all gaze data
             let allGazeData = [];
@@ -308,7 +329,7 @@
                 startButton.style.display = 'none';
                 startCamera()
                     .then(() => {
-                        calibrationMessage.textContent = 'Camera started. Preparing to start tasks...';
+                        calibrationMessage.textContent = 'Camera started. Preparing to start Visual Memory Task...';
                         setTimeout(startVisualMemoryTask, 2000); // Delay before starting memory task
                     })
                     .catch(error => {
@@ -340,14 +361,6 @@
                 }
             }
 
-            // Visual Memory Task Images
-            const memoryImages = [
-                'image1.jpg', // Replace with your actual image paths or URLs
-                'image2.jpg',
-                'image3.jpg',
-                'image4.jpg'
-            ];
-
             // Start Visual Memory Task
             function startVisualMemoryTask() {
                 trialInfo.textContent = `Visual Memory Task: Memorize the images for 10 seconds each.`;
@@ -365,15 +378,6 @@
                 // Display the image
                 taskContainer.innerHTML = `<img src="${memoryImages[index]}" alt="Memory Image" style="max-width: 100%; max-height: 500px;">`;
                 calibrationMessage.textContent = `Memorize the image (${index + 1} of ${memoryImages.length}) for 10 seconds.`;
-
-                // Start recording gaze data
-                trials.push({
-                    taskType: 'memory',
-                    numberOfRings: 0,
-                    reactionTime: null,
-                    gazeData: [],
-                    image: memoryImages[index]
-                });
 
                 // Start timer for 10 seconds
                 setTimeout(() => {
@@ -433,6 +437,7 @@
                 }
 
                 const trial = trials[currentTrial];
+                console.log(`Starting Trial ${currentTrial + 1} of ${trials.length}`);
                 currentTrial++;
 
                 if (trial.taskType === 'memory') {
@@ -492,6 +497,7 @@
                 if (isTarget) {
                     clearTimeout(timer);
                     const reactionTime = Date.now() - trialStartTime;
+                    console.log(`Correct! Reaction Time: ${reactionTime} ms`);
                     calibrationMessage.textContent = `Correct! Reaction Time: ${reactionTime} ms. Preparing next trial...`;
 
                     // Store trial data
@@ -503,6 +509,7 @@
                     setTimeout(startNextTrial, 2000);
                 } else {
                     calibrationMessage.textContent = 'Incorrect target. Try again!';
+                    console.log('Incorrect target clicked.');
                 }
             }
 
@@ -580,7 +587,7 @@
                 const smoothPursuitGain = computeSmoothPursuitGain(allGazeData); // Needs proper implementation
 
                 const saccadicAccuracies = trials.filter(t => t.taskType !== 'memory').map((trial, index) => {
-                    return computeSaccadicAccuracy(trial.gazeData, targetPositions[index]);
+                    return computeSaccadicAccuracy(trial.gazeData, index);
                 }).filter(acc => acc !== null);
                 const averageSaccadicAccuracy = saccadicAccuracies.length > 0 ? (saccadicAccuracies.reduce((a, b) => a + b, 0) / saccadicAccuracies.length) : 0;
 
@@ -627,23 +634,25 @@
 
             function computeSmoothPursuitGain(gazeData) {
                 // Placeholder: Implement based on your specific definition
-                // Smooth pursuit requires target movement data, which is not present in static tasks
+                // Smooth pursuit typically involves tracking moving targets, which isn't the case here
                 // Returning 0 as placeholder
                 return 0;
             }
 
-            function computeSaccadicAccuracy(gazeData, targetPosition) {
+            function computeSaccadicAccuracy(gazeData, trialIndex) {
+                const targetPosition = getTargetPosition(trialIndex);
                 if (!targetPosition) return 0;
-                // Assume targetPosition is the index; need to map it to screen coordinates
-                // For simplicity, we'll calculate distance from the center
-                const screenCenterX = window.innerWidth / 2;
-                const screenCenterY = window.innerHeight / 2;
-                const targetX = mapPositionToCoordinates(targetPosition, trials[currentTrial - 1].numberOfRings).x;
-                const targetY = mapPositionToCoordinates(targetPosition, trials[currentTrial - 1].numberOfRings).y;
+
+                // Map targetPosition to screen coordinates
+                const targetCoords = mapPositionToCoordinates(targetPosition, trials[trialIndex].numberOfRings);
+                if (!targetCoords) return 0;
 
                 const lastGaze = gazeData[gazeData.length - 1];
-                const distance = Math.sqrt(Math.pow(lastGaze.x - targetX, 2) + Math.pow(lastGaze.y - targetY, 2));
-                return distance < 50 ? 1 : 0; // 1 for accurate, 0 otherwise
+                if (!lastGaze) return 0;
+
+                const distance = Math.sqrt(Math.pow(lastGaze.x - targetCoords.x, 2) + Math.pow(lastGaze.y - targetCoords.y, 2));
+                const accuracy = distance < 50 ? 1 : 0; // Assuming within 50 pixels is accurate
+                return accuracy;
             }
 
             function computeFixationDuration(allGazeData) {
@@ -691,7 +700,7 @@
 
             function computeSearchTimeSerial(trials, taskType) {
                 // Calculate the average reaction time for serial search tasks
-                const serialTrials = trials.filter(trial => trial.taskType === 'serial' && trial.reactionTime !== null);
+                const serialTrials = trials.filter(trial => trial.taskType === taskType && trial.reactionTime !== null);
                 if (serialTrials.length === 0) return 0;
                 const totalReactionTime = serialTrials.reduce((a, b) => a + b.reactionTime, 0);
                 return totalReactionTime / serialTrials.length;
@@ -717,7 +726,8 @@
 
                     // Normalize or preprocess features as required by your model
                     // Example: Assuming features need to be normalized between 0 and 1
-                    const normalizedFeatures = features.map(feature => feature / 100); // Adjust normalization as needed
+                    // Adjust normalization based on your model's training
+                    const normalizedFeatures = features.map(feature => feature / 100); // Placeholder normalization
 
                     const inputTensor = tf.tensor2d([normalizedFeatures]);
 
@@ -747,14 +757,6 @@
             // Helper Function to Capitalize First Letter
             function capitalizeFirstLetter(string) {
                 return string.charAt(0).toUpperCase() + string.slice(1);
-            }
-
-            // Feature Extraction and Data Storage (Called after each trial)
-            function extractFeaturesAndStore(reactionTime) {
-                // Implement as per your specific requirements
-                // For example, store reactionTime and associated gazeData
-                // Here, we are storing reactionTime within the trials array
-                // Gaze data is already being collected in the gazeData array
             }
 
             // Ensure data is saved when the page is unloaded
