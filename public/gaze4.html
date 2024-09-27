@@ -11,7 +11,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <style>
         /* Basic Reset */
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -84,11 +85,12 @@
             font-size: 1.5em;
             cursor: pointer;
             transition: transform 0.2s, background-color 0.2s;
+            background-color: #f0f2f5; /* Uniform background color */
         }
 
         .ring:hover {
             transform: scale(1.1);
-            background-color: #f0f2f5;
+            background-color: #e0e0e0; /* Subtle hover effect */
         }
 
         /* Calibration Message */
@@ -253,6 +255,7 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // DOM Elements
             const taskContainer = document.getElementById('task-container');
             const calibrationMessage = document.getElementById('calibrationMessage');
             const startButton = document.getElementById('startButton');
@@ -266,6 +269,7 @@
             const resultsMessage = document.getElementById('results-message');
             const drawingInstruction = document.getElementById('drawing-instruction');
 
+            // Configuration
             const searchTimeLimit = 60000; // 60 seconds per search trial
             let trialPointer = 0; // Pointer to track current trial
             let trials = [];
@@ -282,10 +286,10 @@
 
             // Initialize trials
             const memoryImages = [
-                'images/image1.jpg', // Replace with your actual image paths or URLs
+                'images/image1.jpg', // Ensure these images exist in the 'images' folder
                 'images/image2.jpg',
-                'images/image3.jpg',
-                'images/image4.jpg'
+                'images/image3.jpg'
+                
             ];
 
             // Add memory trials first
@@ -494,23 +498,14 @@
                     const ring = document.createElement('div');
                     ring.classList.add('ring');
 
-                    if (taskType === 'serial') {
-                        // Serial Search: All distractors point upward, one target points downward
+                    if (taskType === 'serial' || taskType === 'popout') {
+                        // All distractors point upward, one target points downward
                         if (i === targetPosition) {
                             ring.textContent = '↓'; // Downward for target
-                            ring.style.backgroundColor = '#ffc107'; // Highlight target
+                            // No background color highlighting
                         } else {
                             ring.textContent = '↑'; // Upward for distractors
-                            ring.style.backgroundColor = '#f0f2f5';
-                        }
-                    } else if (taskType === 'popout') {
-                        // Pop-out Search: All distractors point upward, one target points downward
-                        if (i === targetPosition) {
-                            ring.textContent = '↓'; // Downward for target
-                            ring.style.backgroundColor = '#ffc107'; // Highlight target
-                        } else {
-                            ring.textContent = '↑'; // Upward for distractors
-                            ring.style.backgroundColor = '#f0f2f5';
+                            // Uniform background
                         }
                     }
 
@@ -541,7 +536,7 @@
                     }, 1000);
                 } else {
                     calibrationMessage.textContent = 'Incorrect target. Recording and moving to next task.';
-                    
+
                     // Update wrong count
                     wrongCount++;
 
@@ -579,8 +574,12 @@
             // End Experiment
             function endExperiment() {
                 taskContainer.innerHTML = '';
-                calibrationMessage.textContent = 'Data Collection complete. Processing results...';
-                trialInfo.innerHTML = `<p>Correct Answers: ${correctCount}</p><p>Wrong Answers: ${wrongCount}</p>`;
+                calibrationMessage.innerHTML = `
+                    <p>Correct Answers: ${correctCount}</p>
+                    <p>Wrong Answers: ${wrongCount}</p>
+                    <p>Data Collection complete. Processing results...</p>
+                `;
+                trialInfo.textContent = '';
                 stopCamera();
                 showResultsSection();
             }
@@ -868,14 +867,22 @@
             // Make Prediction using TensorFlow.js Model
             async function makePrediction(features) {
                 try {
-                    // Ensure that model.json is correctly hosted and accessible
+                    // Adjust the path to 'model.json' based on your directory structure
+                    // If your model is in a 'models' folder, use './models/model.json'
                     const model = await tf.loadLayersModel('./model.json');
+
+                    // Verify model is loaded
+                    if (!model) {
+                        throw new Error('Model not loaded correctly.');
+                    }
 
                     // Normalize or preprocess features as required by your model
                     // Example: Assuming features need to be normalized between 0 and 1
                     // Adjust normalization based on your model's training
+                    // IMPORTANT: Ensure that this matches your model's expected input
                     const normalizedFeatures = features.map(feature => feature / 100); // Placeholder normalization
 
+                    // Create tensor from features
                     const inputTensor = tf.tensor2d([normalizedFeatures]);
 
                     // Make prediction
@@ -886,6 +893,8 @@
                     if (predictedClass === undefined || predictedClass === null) {
                         throw new Error('Invalid prediction result.');
                     }
+
+                    console.log('Predicted Class:', predictedClass); // For debugging
 
                     // Redirect to gaze5.html with prediction result
                     localStorage.setItem('prediction', predictedClass);
