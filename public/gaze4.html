@@ -82,7 +82,7 @@
             align-items: center;
             font-size: 1.5em;
             cursor: pointer;
-            transition: transform 0.2s, background-color 0.2s;
+            transition: transform 0.2s;
         }
 
         .ring:hover {
@@ -176,7 +176,7 @@
             color: #28a745;
         }
 
-        /* Hide WebGazer's Red Dot and UI */
+        /* Hide WebGazer's UI Completely */
         #webgazerVideoFeed,
         #webgazerFaceOverlay,
         #webgazerFaceFeedbackBox {
@@ -272,7 +272,7 @@
             // Configuration based on the research paper
             const taskTypes = ['serial', 'popout'];
             const numberOfRingsOptions = [4, 48];
-            const trialsPerCombination = 10; // Total of 40 search trials
+            const trialsPerCombination = 2; // Reduced to have total of 10 search trials (2 combinations * 2 trials each)
 
             // Initialize trials
             const memoryImages = [
@@ -312,7 +312,9 @@
             // Shuffle search trials only
             const searchTrials = trials.slice(memoryImages.length);
             shuffleArray(searchTrials);
-            trials = trials.slice(0, memoryImages.length).concat(searchTrials);
+            // Limit to total of 10 search trials
+            const limitedSearchTrials = searchTrials.slice(0, 10);
+            trials = trials.slice(0, memoryImages.length).concat(limitedSearchTrials);
 
             // Array to store all gaze data
             let allGazeData = [];
@@ -487,14 +489,14 @@
                     ring.classList.add('ring');
 
                     if (taskType === 'serial') {
-                        // Serial Search: Target has different orientation
+                        // Serial Search: All distractors point upward, one target points downward
                         if (i === targetPosition) {
                             ring.textContent = '↓'; // Downward for target
                         } else {
                             ring.textContent = '↑'; // Upward for distractors
                         }
                     } else if (taskType === 'popout') {
-                        // Pop-out Search: Target has different orientation
+                        // Pop-out Search: All distractors point upward, one target points downward
                         if (i === targetPosition) {
                             ring.textContent = '↓'; // Downward for target
                         } else {
@@ -593,6 +595,14 @@
 
             // Disable WebGazer’s built-in UI
             webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+            // Additionally, ensure no other UI elements are visible
+            const hideElements = ['webgazerVideoFeed', 'webgazerFaceOverlay', 'webgazerFaceFeedbackBox'];
+            hideElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style.display = 'none';
+                }
+            });
 
             // Feature Extraction Function
             function extractFeatures(allGazeData, trials, targetPositions) {
@@ -831,7 +841,9 @@
             // Make Prediction using TensorFlow.js Model
             async function makePrediction(features) {
                 try {
-                    const model = await tf.loadLayersModel('./model.json'); // Ensure the model.json is correctly hosted
+                    // Ensure that model.json is correctly hosted and accessible
+                    const model = await tf.loadLayersModel('./model.json');
+
                     // Normalize or preprocess features as required by your model
                     // Example: Assuming features need to be normalized between 0 and 1
                     // Adjust normalization based on your model's training
