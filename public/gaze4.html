@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -272,7 +273,7 @@
             // Configuration based on the research paper
             const taskTypes = ['serial', 'popout'];
             const numberOfRingsOptions = [4, 48];
-            const trialsPerCombination = 2; // Reduced to have total of 10 search trials (2 combinations * 2 trials each)
+            const trialsPerCombination = 2; // Reduced to have total of 10 search trials (2 task types * 2 ring options * 2 trials each = 8; adjust as needed)
 
             // Initialize trials
             const memoryImages = [
@@ -876,4 +877,5 @@
         });
     </script>
 </body>
+
 </html>
