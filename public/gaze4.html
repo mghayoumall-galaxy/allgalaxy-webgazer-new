@@ -98,11 +98,6 @@
             border-color: black;
         }
 
-        .target-ring-color {
-            border-color: red;
-            background-color: #ffcccc;
-        }
-
         /* Calibration Message */
         #calibrationMessage {
             margin-top: 10px;
@@ -190,8 +185,10 @@
             color: #28a745;
         }
 
-        /* Hide WebGazer's Red Dot */
-        #webgazerVideoFeed {
+        /* Hide WebGazer's Red Dot and UI */
+        #webgazerVideoFeed,
+        #webgazerFaceOverlay,
+        #webgazerFaceFeedbackBox {
             display: none !important;
         }
 
@@ -427,6 +424,8 @@
                     // Store drawing score if needed
                     if (trialPointer < memoryImages.length) { // After memory task
                         trials[trialPointer].drawingScore = drawingScore;
+                    } else { // After search task
+                        trials[trialPointer - 1].drawingScore = drawingScore;
                     }
 
                     // Proceed to next task after a short delay
@@ -497,24 +496,22 @@
                     ring.classList.add('ring');
 
                     if (taskType === 'serial') {
-                        // Serial Search: Target has upward orientation, distractors downward
+                        // Serial Search: Target has different orientation
                         if (i === targetPosition) {
                             ring.classList.add('target-ring-upward');
-                            ring.textContent = '↑'; // Upward
-                            ring.style.transform = 'rotate(0deg)';
+                            ring.textContent = '↓'; // Downward for target
                         } else {
                             ring.classList.add('distractor-ring');
-                            ring.textContent = '↓'; // Downward
-                            ring.style.transform = 'rotate(180deg)';
+                            ring.textContent = '↑'; // Upward for distractors
                         }
                     } else if (taskType === 'popout') {
-                        // Pop-out Search: Target has different color, distractors same color
+                        // Pop-out Search: Target has different orientation
                         if (i === targetPosition) {
-                            ring.classList.add('target-ring-color');
-                            ring.textContent = 'O'; // Red
+                            ring.classList.add('target-ring-upward');
+                            ring.textContent = '↓'; // Downward for target
                         } else {
                             ring.classList.add('distractor-ring');
-                            ring.textContent = 'O'; // Black
+                            ring.textContent = '↑'; // Upward for distractors
                         }
                     }
 
@@ -609,11 +606,6 @@
 
             // Disable WebGazer’s built-in UI
             webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
-            // Hide WebGazer's red dot if still visible
-            const webgazerVideoFeed = document.getElementById('webgazerVideoFeed');
-            if (webgazerVideoFeed) {
-                webgazerVideoFeed.style.display = 'none';
-            }
 
             // Feature Extraction Function
             function extractFeatures(allGazeData, trials, targetPositions) {
@@ -853,10 +845,18 @@
             async function makePrediction(features) {
                 try {
                     const model = await tf.loadLayersModel('./model.json'); // Ensure the model.json is correctly hosted
-                    const normalizedFeatures = features.map(feature => feature / 100); // Adjust normalization as needed
+                    // Normalize or preprocess features as required by your model
+                    // Example: Assuming features need to be normalized between 0 and 1
+                    // Adjust normalization based on your model's training
+                    const normalizedFeatures = features.map(feature => feature / 100); // Placeholder normalization
+
                     const inputTensor = tf.tensor2d([normalizedFeatures]);
+
+                    // Make prediction
                     const prediction = model.predict(inputTensor);
                     const predictedClass = prediction.argMax(1).dataSync()[0]; // Assuming classification
+
+                    // Redirect to gaze5.html with prediction result
                     localStorage.setItem('prediction', predictedClass);
                     window.location.href = 'gaze5.html';
                 } catch (error) {
