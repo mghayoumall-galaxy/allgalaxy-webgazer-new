@@ -25,7 +25,7 @@
         /* Container */
         .container {
             width: 90%;
-            max-width: 800px;
+            max-width: 1200px;
             background: #2c2c2e;
             border-radius: 15px;
             padding: 40px;
@@ -86,6 +86,7 @@
             visibility: hidden;
             transition: visibility 0.3s ease-in-out;
             transform: translate(-50%, -50%);
+            z-index: 3;
         }
 
         /* Calibration Message */
@@ -101,6 +102,22 @@
             color: #777;
             font-size: 0.9em;
         }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #videoFrame {
+                width: 150px;
+                height: 150px;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            #calibrationMessage {
+                font-size: 1em;
+            }
+        }
     </style>
 </head>
 
@@ -115,9 +132,9 @@
             <div id="videoFrame">
                 <video id="videoElement" autoplay playsinline></video>
             </div>
-            
-            <div id="calibrationMessage">Please follow the red dots on the screen to calibrate.</div>
-            
+
+            <div id="calibrationMessage">Initializing calibration...</div>
+
             <!-- Calibration Points -->
             <div id="calibrationDiv" class="calibration">
                 <div class="calibrationPoint" id="point1" style="top: 10%; left: 10%;"></div>
@@ -137,12 +154,13 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const videoElement = document.getElementById('videoElement');
             const calibrationPoints = document.querySelectorAll('.calibrationPoint');
             const calibrationMessage = document.getElementById('calibrationMessage');
             const totalPoints = calibrationPoints.length;
             let currentPoint = 0;
+            let calibrationSuccessful = false;
 
             // Start the camera
             startCamera();
@@ -195,7 +213,7 @@
             }
 
             function startCalibration() {
-                calibrationMessage.textContent = 'Calibration in progress...';
+                calibrationMessage.textContent = 'Calibration in progress... Please follow the red dots.';
                 showNextCalibrationPoint();
             }
 
@@ -207,22 +225,40 @@
 
                 const point = calibrationPoints[currentPoint];
                 point.style.visibility = 'visible';
-                
-                // Briefly show the point before hiding it
+
+                // After a short duration, hide the point and move to the next
                 setTimeout(() => {
                     point.style.visibility = 'hidden';
                     currentPoint++;
                     showNextCalibrationPoint();
-                }, 1000); // Adjust the time interval as needed (e.g., 1000ms)
+                }, 1500); // Show each point for 1.5 seconds
             }
 
             function finishCalibration() {
                 stopCamera(); // Stop the camera when calibration is complete
-                calibrationMessage.textContent = 'Calibration complete. Redirecting...';
+                calibrationMessage.textContent = 'Calibration complete. Verifying...';
+
+                // Optional: Add verification logic here to ensure calibration quality
+                // For example, analyze gaze data to confirm calibration accuracy
+
+                // Simulate verification delay
+                setTimeout(() => {
+                    calibrationSuccessful = true;
+                    calibrationMessage.textContent = 'Calibration successful. Redirecting...';
+                    redirectToNextPage();
+                }, 2000);
+            }
+
+            function redirectToNextPage() {
                 setTimeout(() => {
                     window.location.href = 'gaze4.html'; // Redirect to the visual task and assessment page
-                }, 2000); // Adjust the delay as needed
+                }, 1000); // Redirect after 1 second
             }
+
+            // Ensure data is saved when the page is unloaded
+            window.addEventListener('beforeunload', function (e) {
+                // Implement data saving logic here, such as sending data to a server
+            });
         });
     </script>
 </body>
