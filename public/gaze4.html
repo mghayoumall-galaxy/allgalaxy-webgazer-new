@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eye Movement Data Collection & Cognitive Assessment</title>
+    <!-- TensorFlow.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <!-- WebGazer for Eye Tracking -->
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <style>
@@ -659,8 +661,12 @@
                 `;
                 trialInfo.textContent = '';
                 stopCamera();
+                // Save data and redirect to gaze5.html
+                saveAndRedirect();
+            }
 
-                // Store comprehensive experiment data
+            // Save Data to localStorage and Redirect
+            function saveAndRedirect() {
                 const experimentData = {
                     trials: trials,
                     allGazeData: allGazeData,
@@ -669,11 +675,7 @@
                     wrongCount: wrongCount
                 };
                 localStorage.setItem('experimentData', JSON.stringify(experimentData));
-
-                // Redirect to gaze5.html after a short delay
-                setTimeout(() => {
-                    window.location.href = 'gaze5.html';
-                }, 3000);
+                window.location.href = 'gaze5.html';
             }
 
             // Shuffle array in-place using Fisher-Yates algorithm
@@ -699,7 +701,7 @@
                 });
             }).begin();
 
-            // Disable WebGazer’s built-in UI
+            // Disable WebGazer’s built-in UI and hide red dot
             webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
             // Additionally, ensure no other UI elements are visible
             const hideElements = ['webgazerVideoFeed', 'webgazerFaceOverlay', 'webgazerFaceFeedbackBox'];
@@ -710,21 +712,22 @@
                 }
             });
 
+            // Ensure the red dot is hidden
+            webgazer.setTracker('clmtrackr').setGazeListener(null).begin();
+            const css = `
+                #webgazerGazeDot {
+                    display: none !important;
+                }
+            `;
+            const style = document.createElement('style');
+            style.type = 'text/css';
+            style.appendChild(document.createTextNode(css));
+            document.head.appendChild(style);
+
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
                 // Implement data saving logic here, such as sending data to a server
             });
-
-            // Helper Function to Capitalize First Letter
-            function capitalizeFirstLetter(string) {
-                return string.charAt(0).toUpperCase() + string.slice(1);
-            }
-
-            // Update Progress Bar
-            function updateProgress() {
-                const progressPercentage = ((trialPointer) / totalTrials) * 100;
-                progressBar.style.width = `${progressPercentage}%`;
-            }
         });
     </script>
 </body>
