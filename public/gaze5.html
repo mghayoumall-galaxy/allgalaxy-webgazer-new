@@ -155,8 +155,8 @@
             }
 
             // Display Prediction Results
-            function displayResults(experimentData) {
-                const prediction = experimentData.prediction;
+            async function displayResults(experimentData) {
+                const prediction = await makePrediction(experimentData);
                 predictionResult.textContent = mapPredictionToText(prediction);
                 advice.textContent = getAdviceBasedOnPrediction(prediction);
 
@@ -238,6 +238,48 @@
                 };
 
                 new Chart(resultsChartCtx, config);
+            }
+
+            // Make Prediction using TensorFlow.js Model
+            async function makePrediction(experimentData) {
+                try {
+                    // Extract features from allGazeData
+                    const features = extractFeatures(experimentData.allGazeData, experimentData.trials, experimentData.targetPositions);
+
+                    // Normalize or preprocess features as required by your model
+                    // Example: Assuming features need to be normalized between 0 and 1
+                    // Adjust normalization based on your model's training
+                    // IMPORTANT: Ensure that this matches your model's expected input
+                    const normalizedFeatures = Object.values(features).map(feature => feature / 100); // Placeholder normalization
+
+                    // Create tensor from features
+                    const inputTensor = tf.tensor2d([normalizedFeatures]);
+
+                    // Load the model
+                    const model = await tf.loadLayersModel('./model.json'); // Ensure the path is correct
+
+                    // Make prediction
+                    const prediction = model.predict(inputTensor);
+                    const predictedClass = prediction.argMax(1).dataSync()[0]; // Assuming classification
+
+                    // Check if prediction is valid
+                    if (predictedClass === undefined || predictedClass === null) {
+                        throw new Error('Invalid prediction result.');
+                    }
+
+                    console.log('Predicted Class:', predictedClass); // For debugging
+
+                    // Optionally, store the prediction back into experimentData
+                    experimentData.prediction = predictedClass;
+                    localStorage.setItem('experimentData', JSON.stringify(experimentData));
+
+                    return predictedClass;
+                } catch (error) {
+                    console.error('Prediction error:', error);
+                    predictionResult.textContent = 'An error occurred during prediction.';
+                    advice.textContent = 'Please try again or contact support.';
+                    return null;
+                }
             }
 
             // Feature Extraction Function
@@ -471,25 +513,6 @@
                 const x = centerX + radius * Math.cos(angle);
                 const y = centerY + radius * Math.sin(angle);
                 return { x, y };
-            }
-
-            // Store Data in localStorage and Redirect to gaze5.html
-            function storeAndRedirect() {
-                // Store comprehensive experiment data
-                const experimentData = {
-                    trials: trials,
-                    allGazeData: allGazeData,
-                    targetPositions: targetPositions,
-                    correctCount: correctCount,
-                    wrongCount: wrongCount
-                    // Prediction will be handled in gaze5.html
-                };
-                localStorage.setItem('experimentData', JSON.stringify(experimentData));
-
-                // Redirect to gaze5.html after a short delay
-                setTimeout(() => {
-                    window.location.href = 'gaze5.html';
-                }, 2000);
             }
 
             // Ensure data is saved when the page is unloaded

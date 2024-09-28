@@ -223,8 +223,7 @@
         /* Hide WebGazer's UI Completely */
         #webgazerVideoFeed,
         #webgazerFaceOverlay,
-        #webgazerFaceFeedbackBox,
-        #webgazerDot {
+        #webgazerFaceFeedbackBox {
             display: none !important;
         }
 
@@ -660,11 +659,8 @@
                 `;
                 trialInfo.textContent = '';
                 stopCamera();
-                storeAndRedirect();
-            }
 
-            // Store Data and Redirect to gaze5.html
-            function storeAndRedirect() {
+                // Store comprehensive experiment data
                 const experimentData = {
                     trials: trials,
                     allGazeData: allGazeData,
@@ -673,7 +669,11 @@
                     wrongCount: wrongCount
                 };
                 localStorage.setItem('experimentData', JSON.stringify(experimentData));
-                window.location.href = 'gaze5.html';
+
+                // Redirect to gaze5.html after a short delay
+                setTimeout(() => {
+                    window.location.href = 'gaze5.html';
+                }, 3000);
             }
 
             // Shuffle array in-place using Fisher-Yates algorithm
@@ -700,9 +700,9 @@
             }).begin();
 
             // Disable WebGazer’s built-in UI
-            webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false).setGazeDotSize(0).setGazeDotColour('transparent');
+            webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
             // Additionally, ensure no other UI elements are visible
-            const hideElements = ['webgazerVideoFeed', 'webgazerFaceOverlay', 'webgazerFaceFeedbackBox', 'webgazerDot'];
+            const hideElements = ['webgazerVideoFeed', 'webgazerFaceOverlay', 'webgazerFaceFeedbackBox'];
             hideElements.forEach(id => {
                 const element = document.getElementById(id);
                 if (element) {
