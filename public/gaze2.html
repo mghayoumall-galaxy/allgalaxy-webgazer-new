@@ -13,8 +13,8 @@
             box-sizing: border-box;
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1c1c1e;
-            color: #ffffff;
+            background-color: #f0f2f5;
+            color: #333;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -24,11 +24,11 @@
         .container {
             width: 90%;
             max-width: 600px;
-            background: #2c2c2e;
+            background: #ffffff;
             border-radius: 15px;
             padding: 40px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
         }
 
         /* Header Styling */
@@ -44,7 +44,7 @@
         header h1 {
             font-size: 2.5em;
             font-weight: 700;
-            color: #00aaff;
+            color: #007BFF;
             margin-bottom: 20px;
         }
 
@@ -53,7 +53,7 @@
             font-size: 1.2em;
             line-height: 1.8;
             margin-bottom: 30px;
-            color: #d1d1d1;
+            color: #555;
         }
 
         /* Button Styling */
@@ -61,7 +61,7 @@
             padding: 15px 40px;
             border: none;
             border-radius: 8px;
-            background-color: #007bff;
+            background-color: #28a745;
             color: #ffffff;
             font-size: 1.2em;
             font-weight: bold;
@@ -71,7 +71,7 @@
         }
 
         #proceedButton:hover {
-            background-color: #0056b3;
+            background-color: #218838;
             transform: translateY(-2px);
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
@@ -81,6 +81,22 @@
             margin-top: 40px;
             color: #777;
             font-size: 0.9em;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2em;
+            }
+
+            main p {
+                font-size: 1em;
+            }
+
+            #proceedButton {
+                padding: 12px 25px;
+                font-size: 1em;
+            }
         }
     </style>
 </head>
@@ -94,7 +110,7 @@
         <main>
             <p>Please follow the instructions on the next screen to track your eye movements.</p>
             <p>The process will take approximately 5 minutes.</p>
-            <button id="proceedButton">Proceed to Tracking</button>
+            <button id="proceedButton">Proceed to Calibration</button>
         </main>
         <footer>
             <p>&copy; 2024 Eye Movement Research. All rights reserved.</p>
@@ -102,9 +118,9 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const proceedButton = document.getElementById('proceedButton');
-            proceedButton.addEventListener('click', function() {
+            proceedButton.addEventListener('click', function () {
                 window.location.href = 'gaze3.html';
             });
         });

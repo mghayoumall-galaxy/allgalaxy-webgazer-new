@@ -22,13 +22,15 @@
 
         /* Container */
         .container {
-            width: 100%;
+            width: 90%;
             max-width: 600px;
             background: #2c2c2e;
             border-radius: 15px;
             padding: 40px;
             text-align: center;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            position: relative;
+            z-index: 2;
         }
 
         /* Header Styling */
@@ -126,6 +128,41 @@
             color: #777;
             font-size: 0.9em;
         }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            header h1 {
+                font-size: 2em;
+            }
+
+            header p {
+                font-size: 1em;
+            }
+
+            label {
+                font-size: 1em;
+                line-height: 36px;
+            }
+
+            input, select {
+                font-size: 0.9em;
+                height: 40px;
+            }
+
+            .form-section {
+                height: 50px;
+            }
+
+            button {
+                font-size: 1em;
+                padding: 10px 25px;
+                height: 45px;
+            }
+        }
     </style>
 </head>
 
@@ -193,8 +230,8 @@
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            document.getElementById('userInfoForm').addEventListener('submit', function(event) {
+        document.addEventListener('DOMContentLoaded', function () {
+            document.getElementById('userInfoForm').addEventListener('submit', function (event) {
                 event.preventDefault();
 
                 const age = parseInt(document.getElementById('age').value, 10);

@@ -15,8 +15,8 @@
             box-sizing: border-box;
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1c1c1e;
-            color: #ffffff;
+            background-color: #f0f2f5;
+            color: #333;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -25,12 +25,12 @@
         /* Container */
         .container {
             width: 90%;
-            max-width: 1200px;
-            background: #2c2c2e;
+            max-width: 800px;
+            background: #ffffff;
             border-radius: 15px;
             padding: 40px;
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             position: relative;
             z-index: 2;
         }
@@ -43,7 +43,7 @@
         header h1 {
             font-size: 2.5em;
             font-weight: 700;
-            color: #00aaff;
+            color: #007BFF;
             margin-bottom: 20px;
         }
 
@@ -55,7 +55,7 @@
             overflow: hidden;
             margin: 0 auto 20px auto;
             position: relative;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
         }
 
         #videoElement {
@@ -72,7 +72,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.5);
             z-index: 1;
         }
 
@@ -80,11 +80,11 @@
         .calibrationPoint {
             width: 20px;
             height: 20px;
-            background-color: #e63946;
+            background-color: #007BFF;
             border-radius: 50%;
             position: absolute;
             visibility: hidden;
-            transition: visibility 0.3s ease-in-out;
+            transition: visibility 0.3s ease-in-out, background-color 0.3s;
             transform: translate(-50%, -50%);
             z-index: 3;
         }
@@ -92,7 +92,7 @@
         /* Calibration Message */
         #calibrationMessage {
             margin-top: 20px;
-            color: #00aaff;
+            color: #007BFF;
             font-size: 1.2em;
         }
 
@@ -213,7 +213,7 @@
             }
 
             function startCalibration() {
-                calibrationMessage.textContent = 'Calibration in progress... Please follow the red dots.';
+                calibrationMessage.textContent = 'Calibration in progress... Please follow the blue dots.';
                 showNextCalibrationPoint();
             }
 
