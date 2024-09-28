@@ -7,7 +7,8 @@
     <title>User Information - Alzheimer’s Early Detection</title>
     <style>
         /* Basic Reset */
-        body, html {
+        body,
+        html {
             height: 100%;
             margin: 0;
             padding: 0;
@@ -67,7 +68,8 @@
             line-height: 44px;
         }
 
-        input, select {
+        input,
+        select {
             width: 100%;
             max-width: 500px;
             padding: 12px;
@@ -78,6 +80,13 @@
             color: #ffffff;
             font-size: 1em;
             height: 44px;
+            outline: none;
+            transition: border 0.3s ease;
+        }
+
+        input:focus,
+        select:focus {
+            border: 1px solid #00ffdd;
         }
 
         /* Ensuring All Sections Have the Same Size */
@@ -102,7 +111,7 @@
             font-size: 1.2em;
             font-weight: bold;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
             height: 50px;
             width: 100%;
@@ -112,6 +121,7 @@
         button:hover {
             background-color: #0056b3;
             transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
         }
 
         /* Eligibility Message Styling */
@@ -148,7 +158,8 @@
                 line-height: 36px;
             }
 
-            input, select {
+            input,
+            select {
                 font-size: 0.9em;
                 height: 40px;
             }
@@ -176,7 +187,7 @@
             <form id="userInfoForm">
                 <div class="form-section">
                     <label for="age">Age:</label>
-                    <input type="number" id="age" name="age" required>
+                    <input type="number" id="age" name="age" required min="18" placeholder="Enter your age">
                 </div>
 
                 <div class="form-section">
@@ -239,11 +250,27 @@
                 const healthCondition = document.getElementById('healthCondition').value.toLowerCase().trim();
                 const eligibilityMessage = document.getElementById('eligibilityMessage');
 
-                if (age < 50 || diagnosis === 'no' || healthCondition.includes('cataracts') || healthCondition.includes('glaucoma')) {
+                // Define eligibility criteria
+                const isEligible = age >= 50 && diagnosis === 'yes' && !healthCondition.includes('cataracts') && !healthCondition.includes('glaucoma');
+
+                if (!isEligible) {
                     eligibilityMessage.innerText = 'Unfortunately, you are not eligible for this study.';
                 } else {
                     eligibilityMessage.innerText = ''; // Clear any previous messages
-                    window.location.href = 'gaze2.html'; // Redirect to the next page if eligible
+
+                    // Store user information in localStorage (if needed for later use)
+                    const userInfo = {
+                        age: age,
+                        sex: document.getElementById('sex').value,
+                        ethnicity: document.getElementById('ethnicity').value,
+                        diagnosis: diagnosis,
+                        healthCondition: healthCondition,
+                        location: document.getElementById('location').value
+                    };
+                    localStorage.setItem('userInfo', JSON.stringify(userInfo));
+
+                    // Redirect to the next page if eligible
+                    window.location.href = 'gaze2.html';
                 }
             });
         });
