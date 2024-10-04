@@ -7,7 +7,9 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const port = process.env.PORT || 3000;
+
+// Change port to 80 for public access without specifying a port
+const port = process.env.PORT || 80;
 
 const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -39,5 +41,5 @@ app.post('/save-gaze-data', async (req, res) => {
 });
 
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server running on port ${port}`);
 });
