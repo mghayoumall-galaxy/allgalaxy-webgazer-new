@@ -172,14 +172,22 @@
             });
 
             function startCamera() {
-                navigator.mediaDevices.getUserMedia({ video: true })
-                    .then(stream => {
-                        videoElement.srcObject = stream;
-                    })
-                    .catch(error => {
-                        console.error('Error accessing the camera', error);
-                        calibrationMessage.textContent = 'Unable to access camera. Please check your settings.';
-                    });
+                console.log("Attempting to access camera...");
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    console.log("getUserMedia is available, attempting to access...");
+                    navigator.mediaDevices.getUserMedia({ video: true })
+                        .then(stream => {
+                            console.log("Camera access successful");
+                            videoElement.srcObject = stream;
+                        })
+                        .catch(error => {
+                            console.error('Error accessing the camera', error);
+                            calibrationMessage.textContent = 'Unable to access camera. Please check your settings.';
+                        });
+                } else {
+                    console.error('getUserMedia not supported on this browser.');
+                    calibrationMessage.textContent = 'Camera not supported on this browser.';
+                }
             }
 
             function stopCamera() {
@@ -197,7 +205,7 @@
                         return;
                     }
                     // You can log gaze data here for debugging
-                    // console.log(`Gaze Data - X: ${data.x}, Y: ${data.y}, Time: ${elapsedTime}`);
+                    console.log(`Gaze Data - X: ${data.x}, Y: ${data.y}, Time: ${elapsedTime}`);
                 }).begin();
 
                 // Hide all WebGazer UI elements to prevent distraction
