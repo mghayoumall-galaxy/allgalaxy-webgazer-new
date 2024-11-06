@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Information - Alzheimer’s Early Detection</title>
+    <title>User Information - Eligibility Check</title>
     <style>
         /* Basic Reset */
         body,
@@ -176,12 +174,11 @@
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <header>
             <h1>User Information</h1>
-            <p>Please provide the following information to determine your eligibility for the eye-tracking study:</p>
+            <p>Please provide the following information</p>
         </header>
         <main>
             <form id="userInfoForm">
@@ -190,9 +187,10 @@
                     <input type="number" id="age" name="age" required min="18" placeholder="Enter your age">
                 </div>
 
+                <!-- Sex and Ethnicity Fields -->
                 <div class="form-section">
                     <label for="sex">Sex:</label>
-                    <select id="sex" name="sex" required>
+                    <select id="sex" name="sex">
                         <option value="" disabled selected>Select your sex</option>
                         <option value="male">Male</option>
                         <option value="female">Female</option>
@@ -202,7 +200,7 @@
 
                 <div class="form-section">
                     <label for="ethnicity">Ethnicity:</label>
-                    <select id="ethnicity" name="ethnicity" required>
+                    <select id="ethnicity" name="ethnicity">
                         <option value="" disabled selected>Select your ethnicity</option>
                         <option value="white">White</option>
                         <option value="black">Black</option>
@@ -212,23 +210,20 @@
                     </select>
                 </div>
 
+                <!-- Known Eye Conditions Field -->
                 <div class="form-section">
-                    <label for="diagnosis">Diagnosed with early-stage Alzheimer’s?</label>
-                    <select id="diagnosis" name="diagnosis" required>
+                    <label for="healthCondition">Known Eye Conditions?</label>
+                    <select id="healthCondition" name="healthCondition" required>
                         <option value="" disabled selected>Select</option>
-                        <option value="yes">Yes</option>
                         <option value="no">No</option>
+                        <option value="yes">Yes</option>
                     </select>
                 </div>
 
-                <div class="form-section">
-                    <label for="healthCondition">Known eye conditions?</label>
-                    <input type="text" id="healthCondition" name="healthCondition" placeholder="e.g., none, cataracts" required>
-                </div>
-
+                <!-- Location Field -->
                 <div class="form-section">
                     <label for="location">Location:</label>
-                    <input type="text" id="location" name="location" placeholder="City, State, Country" required>
+                    <input type="text" id="location" name="location" placeholder="City, State, Country">
                 </div>
 
                 <button type="submit">Submit</button>
@@ -246,35 +241,44 @@
                 event.preventDefault();
 
                 const age = parseInt(document.getElementById('age').value, 10);
-                const diagnosis = document.getElementById('diagnosis').value;
-                const healthCondition = document.getElementById('healthCondition').value.toLowerCase().trim();
+                const healthCondition = document.getElementById('healthCondition').value;
                 const eligibilityMessage = document.getElementById('eligibilityMessage');
 
                 // Define eligibility criteria
-                const isEligible = age >= 50 && diagnosis === 'yes' && !healthCondition.includes('cataracts') && !healthCondition.includes('glaucoma');
+                const isEligible = age > 18 && healthCondition === 'no';
 
                 if (!isEligible) {
-                    eligibilityMessage.innerText = 'Unfortunately, you are not eligible for this study.';
+                    // Determine the specific reason for ineligibility
+                    let message = 'Unfortunately, you are not eligible for this study.';
+                    if (age <= 18) {
+                        message = 'You must be over 18 years old to participate.';
+                    } else if (healthCondition !== 'no') {
+                        message = 'Known eye conditions disqualify you from participating.';
+                    }
+
+                    eligibilityMessage.innerText = message;
+                    eligibilityMessage.style.color = '#e63946'; // Red color for ineligibility
                 } else {
-                    eligibilityMessage.innerText = ''; // Clear any previous messages
+                    eligibilityMessage.innerText = 'You are eligible for this study!';
+                    eligibilityMessage.style.color = '#2a9d8f'; // Green color for eligibility
 
                     // Store user information in localStorage (if needed for later use)
                     const userInfo = {
                         age: age,
                         sex: document.getElementById('sex').value,
                         ethnicity: document.getElementById('ethnicity').value,
-                        diagnosis: diagnosis,
                         healthCondition: healthCondition,
                         location: document.getElementById('location').value
                     };
                     localStorage.setItem('userInfo', JSON.stringify(userInfo));
 
-                    // Redirect to the next page if eligible
-                    window.location.href = 'gaze2.html';
+                    // Redirect to the next page after a short delay to show the eligibility message
+                    setTimeout(() => {
+                        window.location.href = 'gaze2.html';
+                    }, 2000); // 2-second delay
                 }
             });
         });
     </script>
 </body>
-
 </html>
