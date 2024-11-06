@@ -166,19 +166,6 @@
             font-size: 1em;
         }
 
-        /* Results Section */
-        #results-section {
-            margin: 20px 0;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #results-message {
-            font-size: 1.2em;
-            color: #28a745;
-        }
-
         /* Privacy Notice */
         #privacyNotice {
             margin: 20px 0;
@@ -253,16 +240,10 @@
         <!-- Drawing Upload Section -->
         <div id="drawing-section">
             <h2>Drawing Task</h2>
-            <p id="drawing-instruction">Please draw the image you memorized and a clock showing 10:10 on a piece of paper.</p>
+            <p>Please draw the image you memorized and a clock showing 10:10 on a piece of paper.</p>
             <input type="file" id="drawingUpload" accept="image/*">
             <button id="uploadButton">Upload Drawing</button>
             <div id="uploadStatus"></div>
-        </div>
-
-        <!-- Results Section -->
-        <div id="results-section">
-            <h2>Assessment Complete</h2>
-            <p id="results-message">Processing your data...</p>
         </div>
     </div>
 
@@ -282,30 +263,14 @@
             const drawingUpload = document.getElementById('drawingUpload');
             const uploadButton = document.getElementById('uploadButton');
             const uploadStatus = document.getElementById('uploadStatus');
-            const resultsSection = document.getElementById('results-section');
-            const resultsMessage = document.getElementById('results-message');
-            const drawingInstruction = document.getElementById('drawing-instruction');
             const progressBar = document.getElementById('progress-bar');
 
             // Configuration
             let trialPointer = 0; // Pointer to track current trial
-            let trials = [];
-            const memoryImages = [
-                'images/image1.jpg' // Ensure this image exists in the 'images' folder
-            ];
-
-            // Add memory trial
-            trials.push({
-                taskType: 'memory',
-                gazeData: [],
-                image: memoryImages[0]
-            });
-
-            // Array to store all gaze data
-            let allGazeData = [];
+            const memoryImage = 'images/image1.jpg'; // Ensure this image exists in the 'images' folder
 
             // Initialize Progress
-            const totalTrials = trials.length;
+            const totalTrials = 1; // Only one trial in this task
             updateProgress();
 
             // Start Button Event Listener
@@ -313,7 +278,7 @@
                 startButton.style.display = 'none';
                 startCamera()
                     .then(() => {
-                        calibrationMessage.textContent = 'Camera started. Preparing to start Visual Memory Task...';
+                        calibrationMessage.textContent = 'Visual Memory Task: Memorize the image for 10 seconds.';
                         setTimeout(startVisualMemoryTask, 2000); // Delay before starting memory task
                     })
                     .catch(error => {
@@ -345,29 +310,25 @@
 
             // Start Visual Memory Task
             function startVisualMemoryTask() {
-                trialInfo.textContent = `Visual Memory Task: Memorize the image for 10 seconds.`;
+                trialInfo.textContent = '';
                 displayMemoryImage();
             }
 
             // Display Memory Image
             function displayMemoryImage() {
                 // Display the image
-                taskContainer.innerHTML = `<img src="${memoryImages[0]}" alt="Memory Image" style="max-width: 100%; max-height: 500px;">`;
-                calibrationMessage.textContent = `Memorize the image for 10 seconds.`;
+                taskContainer.innerHTML = `<img src="${memoryImage}" alt="Memory Image" style="max-width: 100%; max-height: 500px;">`;
 
                 // Start timer for 10 seconds
                 setTimeout(() => {
                     taskContainer.innerHTML = '';
-                    calibrationMessage.textContent = 'Visual Memory Task Completed.';
+                    calibrationMessage.textContent = 'Please draw the image you memorized and a clock showing 10:10 on a piece of paper.';
                     showDrawingSection();
                 }, 10000);
             }
 
             // Show Drawing Upload Section
             function showDrawingSection() {
-                taskContainer.innerHTML = '';
-                calibrationMessage.textContent = 'Please draw the image you memorized and a clock showing 10:10 on a piece of paper.';
-                drawingInstruction.textContent = 'Please draw the image you memorized and a clock showing 10:10 on a piece of paper.';
                 drawingSection.style.display = 'flex';
             }
 
@@ -412,33 +373,20 @@
             // End Experiment
             function endExperiment() {
                 taskContainer.innerHTML = '';
-                calibrationMessage.innerHTML = `Data Collection complete. Thank you for your participation.`;
+                calibrationMessage.innerHTML = `Data collection complete. Thank you for your participation.`;
                 trialInfo.textContent = '';
                 stopCamera();
 
                 // Store experiment data
-                const experimentData = {
-                    trials: trials,
-                    allGazeData: allGazeData
-                };
-                localStorage.setItem('experimentData', JSON.stringify(experimentData));
-
-                // Optionally, you can redirect or display results here
+                // You can implement data saving logic here
             }
 
             // Initialize WebGazer for Eye Tracking
-            let gazeData = []; // Current trial's gaze data
             webgazer.setGazeListener(function (data, elapsedTime) {
                 if (data == null) {
                     return;
                 }
-                // Store gaze data with timestamp
-                gazeData.push({
-                    x: data.x,
-                    y: data.y,
-                    timestamp: elapsedTime,
-                    pupilSize: data.pupil || null // Assuming WebGazer provides pupil size
-                });
+                // You can store gaze data here if needed
             }).begin();
 
             // Disable WebGazer’s built-in UI
@@ -454,7 +402,6 @@
 
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
-                // Implement data saving logic here, such as sending data to a server
                 webgazer.end();
             });
 
