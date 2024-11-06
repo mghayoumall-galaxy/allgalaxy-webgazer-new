@@ -2,12 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Calibration - Eye Movement Data Collection</title>
+    <title>Eye Movement Data Collection & Cognitive Assessment</title>
     <!-- WebGazer for Eye Tracking -->
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <style>
         /* Basic Reset */
-        body, html {
+        body,
+        html {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
@@ -15,186 +16,405 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
             color: #333;
-            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
         }
 
         /* Container */
         .container {
-            width: 100%;
-            height: 100%;
-            position: relative;
+            width: 90%;
+            max-width: 1200px;
+            text-align: center;
+            padding: 20px;
+            margin-top: 20px;
         }
 
-        /* Calibration Points */
-        .calibrationPoint {
-            width: 20px;
+        /* Header Styling */
+        header h1 {
+            font-size: 2em;
+            font-weight: 700;
+            color: #007BFF;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #61dafb;
+            padding-bottom: 10px;
+        }
+
+        /* Progress Bar */
+        #progress-container {
+            width: 100%;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 20px 0;
             height: 20px;
+            overflow: hidden;
+        }
+
+        #progress-bar {
+            width: 0%;
+            height: 100%;
             background-color: #007BFF;
+            transition: width 0.3s;
+        }
+
+        /* Central Camera Frame */
+        #camera-frame {
+            position: relative;
+            margin: 20px auto;
+            width: 200px;
+            height: 200px;
             border-radius: 50%;
-            position: absolute;
-            visibility: hidden;
-            transition: visibility 0.3s ease-in-out, background-color 0.3s;
-            transform: translate(-50%, -50%);
-            z-index: 2;
+            overflow: hidden;
+            border: 4px solid #61dafb;
+            background-color: #ffffff;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+        }
+
+        #webcamVideo {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Task Container */
+        #task-container {
+            margin: 20px 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
         /* Calibration Message */
         #calibrationMessage {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
+            margin-top: 10px;
             color: #007BFF;
-            font-size: 1.5em;
-            z-index: 1;
-            text-align: center;
-            width: 80%;
-        }
-
-        /* Video Element (Hidden) */
-        #webgazerVideoFeed {
-            display: none;
-        }
-
-        /* Fullscreen Mask */
-        .mask {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(240, 242, 245, 0.9);
-            z-index: 0;
+            font-size: 1.2em;
+            text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
         }
 
         /* Footer Styling */
         footer {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
+            width: 100%;
+            background: #ffffff;
             color: #777;
+            padding: 15px;
+            border-radius: 20px 20px 0 0;
             font-size: 0.9em;
-            z-index: 1;
+            text-align: center;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            bottom: 0;
+        }
+
+        /* Start Button */
+        #startButton {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #28a745;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 20px;
+        }
+
+        #startButton:hover {
+            background-color: #218838;
+        }
+
+        /* Trial Information */
+        #trialInfo {
+            margin-top: 15px;
+            font-size: 1.1em;
+            color: #555;
+        }
+
+        /* Drawing Upload Section */
+        #drawing-section {
+            margin: 20px 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #drawingUpload {
+            margin-top: 10px;
+        }
+
+        #uploadButton {
+            padding: 8px 16px;
+            font-size: 1em;
+            background-color: #17a2b8;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        #uploadButton:hover {
+            background-color: #138496;
+        }
+
+        #uploadStatus {
+            margin-top: 10px;
+            font-size: 1em;
+        }
+
+        /* Privacy Notice */
+        #privacyNotice {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            color: #856404;
+        }
+
+        /* Hide WebGazer's UI Completely */
+        #webgazerVideoFeed,
+        #webgazerFaceOverlay,
+        #webgazerFaceFeedbackBox {
+            display: none !important;
         }
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            #calibrationMessage {
-                font-size: 1.2em;
+            #camera-frame {
+                width: 150px;
+                height: 150px;
+            }
+
+            #startButton {
+                font-size: 1em;
+                padding: 8px 16px;
+            }
+
+            #progress-container {
+                height: 15px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
-        <div class="mask"></div>
-        <div id="calibrationMessage">Calibration in progress... Please focus on each dot until it disappears.</div>
+        <header>
+            <h1>Data Collection & Cognitive Assessment</h1>
+        </header>
 
-        <!-- Calibration Points -->
-        <div id="calibrationDiv" class="calibration">
-            <div class="calibrationPoint" id="point1" style="top: 10%; left: 10%;"></div>
-            <div class="calibrationPoint" id="point2" style="top: 10%; left: 50%;"></div>
-            <div class="calibrationPoint" id="point3" style="top: 10%; left: 90%;"></div>
-            <div class="calibrationPoint" id="point4" style="top: 50%; left: 10%;"></div>
-            <div class="calibrationPoint" id="point5" style="top: 50%; left: 50%;"></div>
-            <div class="calibrationPoint" id="point6" style="top: 50%; left: 90%;"></div>
-            <div class="calibrationPoint" id="point7" style="top: 90%; left: 10%;"></div>
-            <div class="calibrationPoint" id="point8" style="top: 90%; left: 50%;"></div>
-            <div class="calibrationPoint" id="point9" style="top: 90%; left: 90%;"></div>
+        <!-- Privacy Notice -->
+        <div id="privacyNotice">
+            <p><strong>Privacy Notice:</strong> All data is anonymized and stored securely.</p>
         </div>
 
-        <footer>
-            <p>&copy; 2024 Eye Movement Research</p>
-        </footer>
+        <!-- Progress Bar -->
+        <div id="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+
+        <!-- Central Camera Frame -->
+        <div id="camera-frame">
+            <video id="webcamVideo" autoplay playsinline></video>
+        </div>
+
+        <!-- Start Button -->
+        <button id="startButton">Start Task</button>
+
+        <!-- Trial Information -->
+        <div id="trialInfo"></div>
+
+        <!-- Task Container -->
+        <div id="task-container">
+            <!-- The image to memorize will appear here -->
+        </div>
+
+        <!-- Calibration Message -->
+        <div id="calibrationMessage">Press "Start Task" to begin.</div>
+
+        <!-- Drawing Upload Section -->
+        <div id="drawing-section">
+            <h2>Drawing Task</h2>
+            <p>Please draw the image you memorized and a clock showing 10:10 on a piece of paper.</p>
+            <input type="file" id="drawingUpload" accept="image/*">
+            <button id="uploadButton">Upload Drawing</button>
+            <div id="uploadStatus"></div>
+        </div>
     </div>
+
+    <footer>
+        <p>&copy; 2024 Eye Movement Research</p>
+    </footer>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const calibrationPoints = document.querySelectorAll('.calibrationPoint');
+            // DOM Elements
+            const taskContainer = document.getElementById('task-container');
             const calibrationMessage = document.getElementById('calibrationMessage');
-            const totalPoints = calibrationPoints.length;
-            let currentPoint = 0;
-            let calibrationSamples = 0;
-            const samplesPerPoint = 30; // Number of samples to collect per point
+            const startButton = document.getElementById('startButton');
+            const trialInfo = document.getElementById('trialInfo');
+            const webcamVideo = document.getElementById('webcamVideo');
+            const drawingSection = document.getElementById('drawing-section');
+            const drawingUpload = document.getElementById('drawingUpload');
+            const uploadButton = document.getElementById('uploadButton');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const progressBar = document.getElementById('progress-bar');
 
-            // Initialize WebGazer
-            initializeWebGazer();
+            // Configuration
+            let trialPointer = 0; // Pointer to track current trial
+            const memoryImage = 'images/image1.jpg'; // Ensure this image exists in the 'images' folder
 
-            function initializeWebGazer() {
-                webgazer.setRegression('ridge') // You can choose the regression model
-                    .setTracker('clmtrackr') // You can choose the face tracker
-                    .begin()
-                    .showVideo(false)
-                    .showFaceOverlay(false)
-                    .showFaceFeedbackBox(false);
+            // Initialize Progress
+            const totalTrials = 1; // Only one trial in this task
+            updateProgress();
 
-                // Wait for the webgazer to be ready
-                webgazer.setGazeListener(function(data, elapsedTime) {
-                    // Gaze data is being received
-                });
+            // Start Button Event Listener
+            startButton.addEventListener('click', function () {
+                startButton.style.display = 'none';
+                startCamera()
+                    .then(() => {
+                        calibrationMessage.textContent = 'Visual Memory Task: Memorize the image for 10 seconds.';
+                        setTimeout(startVisualMemoryTask, 2000); // Delay before starting memory task
+                    })
+                    .catch(error => {
+                        console.error('Error starting camera:', error);
+                        calibrationMessage.textContent = 'Error: Unable to access camera. Please allow camera permissions and refresh the page.';
+                        startButton.style.display = 'block';
+                    });
+            });
 
-                // Start calibration after WebGazer is ready
-                webgazer.getTracker().on('prediction', function() {
-                    // Start calibration after initial prediction to ensure WebGazer is ready
-                    webgazer.getTracker().off('prediction'); // Remove this handler after it's called
-                    startCalibration();
-                });
+            // Start the camera
+            async function startCamera() {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    webcamVideo.srcObject = stream;
+                } catch (error) {
+                    throw error;
+                }
             }
 
-            function startCalibration() {
-                calibrationMessage.textContent = 'Calibration in progress... Please focus on each dot until it disappears.';
-                showNextCalibrationPoint();
+            // Stop the camera
+            function stopCamera() {
+                const stream = webcamVideo.srcObject;
+                if (stream) {
+                    const tracks = stream.getTracks();
+                    tracks.forEach(track => track.stop());
+                    webcamVideo.srcObject = null;
+                }
             }
 
-            function showNextCalibrationPoint() {
-                if (currentPoint >= totalPoints) {
-                    finishCalibration();
+            // Start Visual Memory Task
+            function startVisualMemoryTask() {
+                trialInfo.textContent = '';
+                displayMemoryImage();
+            }
+
+            // Display Memory Image
+            function displayMemoryImage() {
+                // Display the image
+                taskContainer.innerHTML = `<img src="${memoryImage}" alt="Memory Image" style="max-width: 100%; max-height: 500px;">`;
+
+                // Start timer for 10 seconds
+                setTimeout(() => {
+                    taskContainer.innerHTML = '';
+                    calibrationMessage.textContent = 'Please draw the image you memorized and a clock showing 10:10 on a piece of paper.';
+                    showDrawingSection();
+                }, 10000);
+            }
+
+            // Show Drawing Upload Section
+            function showDrawingSection() {
+                drawingSection.style.display = 'flex';
+            }
+
+            // Handle Drawing Upload
+            uploadButton.addEventListener('click', function () {
+                const files = drawingUpload.files;
+                if (files.length === 0) {
+                    uploadStatus.textContent = 'Please select a drawing to upload.';
+                    uploadStatus.style.color = 'red';
                     return;
                 }
 
-                const point = calibrationPoints[currentPoint];
-                point.style.visibility = 'visible';
-                calibrationSamples = 0;
+                const file = files[0];
+                if (!file.type.startsWith('image/')) {
+                    uploadStatus.textContent = 'Invalid file type. Please upload an image.';
+                    uploadStatus.style.color = 'red';
+                    return;
+                }
 
-                // Collect gaze data samples for this point
-                const sampleInterval = setInterval(() => {
-                    calibrationSamples++;
-                    const x = point.offsetLeft + point.offsetWidth / 2;
-                    const y = point.offsetTop + point.offsetHeight / 2;
-                    webgazer.recordScreenPosition(x, y);
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    uploadStatus.textContent = 'File is too large. Please upload an image smaller than 5MB.';
+                    uploadStatus.style.color = 'red';
+                    return;
+                }
 
-                    if (calibrationSamples >= samplesPerPoint) {
-                        clearInterval(sampleInterval);
-                        point.style.visibility = 'hidden';
-                        currentPoint++;
-                        setTimeout(showNextCalibrationPoint, 500); // Short pause before next point
-                    }
-                }, 50); // Collect samples every 50ms
-            }
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imgData = e.target.result;
+                    uploadStatus.innerHTML = `<p style="color: green;">Drawing uploaded successfully.</p><img src="${imgData}" alt="Uploaded Drawing" style="max-width: 300px; max-height: 300px;">`;
 
-            function finishCalibration() {
-                calibrationMessage.textContent = 'Calibration complete. Verifying...';
+                    // Proceed to end the experiment after a short delay
+                    setTimeout(() => {
+                        drawingSection.style.display = 'none';
+                        uploadStatus.innerHTML = '';
+                        drawingUpload.value = ''; // Reset file input
+                        endExperiment();
+                    }, 1000);
+                };
+                reader.readAsDataURL(file);
+            });
 
-                // Optional: Add verification logic here to ensure calibration quality
+            // End Experiment
+            function endExperiment() {
+                taskContainer.innerHTML = '';
+                calibrationMessage.innerHTML = `Data collection complete. Thank you for your participation.`;
+                trialInfo.textContent = '';
+                stopCamera();
 
-                // Simulate verification delay
+                // Store experiment data
+                // You can implement data saving logic here
+
+                // Redirect to gaze4.html after a short delay
                 setTimeout(() => {
-                    calibrationMessage.textContent = 'Calibration successful. Redirecting...';
-                    redirectToNextPage();
-                }, 2000);
+                    window.location.href = 'gaze4.html';
+                }, 2000); // Redirect after 2 seconds
             }
 
-            function redirectToNextPage() {
-                setTimeout(() => {
-                    window.location.href = 'gaze4.html'; // Redirect to the visual task and assessment page
-                }, 1000); // Redirect after 1 second
-            }
+            // Initialize WebGazer for Eye Tracking
+            webgazer.setGazeListener(function (data, elapsedTime) {
+                if (data == null) {
+                    return;
+                }
+                // You can store gaze data here if needed
+            }).begin();
+
+            // Disable WebGazer’s built-in UI
+            webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
+            // Additionally, ensure no other UI elements are visible
+            const hideElements = ['webgazerVideoFeed', 'webgazerFaceOverlay', 'webgazerFaceFeedbackBox'];
+            hideElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.style.display = 'none';
+                }
+            });
 
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
                 webgazer.end();
             });
+
+            // Update Progress Bar
+            function updateProgress() {
+                const progressPercentage = ((trialPointer) / totalTrials) * 100;
+                progressBar.style.width = `${progressPercentage}%`;
+            }
         });
     </script>
 </body>
