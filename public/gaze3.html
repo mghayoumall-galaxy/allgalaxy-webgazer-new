@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calibration - Eye Movement Data Collection</title>
     <!-- WebGazer for Eye Tracking -->
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
@@ -17,63 +15,14 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #f0f2f5;
             color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            overflow: hidden;
         }
 
         /* Container */
         .container {
-            width: 90%;
-            max-width: 800px;
-            background: #ffffff;
-            border-radius: 15px;
-            padding: 40px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            position: relative;
-            z-index: 2;
-        }
-
-        /* Header Styling */
-        header {
-            margin-bottom: 30px;
-        }
-
-        header h1 {
-            font-size: 2.5em;
-            font-weight: 700;
-            color: #007BFF;
-            margin-bottom: 20px;
-        }
-
-        /* Video Frame */
-        #videoFrame {
-            width: 200px;
-            height: 200px;
-            border-radius: 50%;
-            overflow: hidden;
-            margin: 0 auto 20px auto;
-            position: relative;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-        }
-
-        #videoElement {
             width: 100%;
             height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        /* Masking the rest of the screen */
-        .mask {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1;
+            position: relative;
         }
 
         /* Calibration Points */
@@ -86,68 +35,75 @@
             visibility: hidden;
             transition: visibility 0.3s ease-in-out, background-color 0.3s;
             transform: translate(-50%, -50%);
-            z-index: 3;
+            z-index: 2;
         }
 
         /* Calibration Message */
         #calibrationMessage {
-            margin-top: 20px;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
             color: #007BFF;
-            font-size: 1.2em;
+            font-size: 1.5em;
+            z-index: 1;
+            text-align: center;
+            width: 80%;
+        }
+
+        /* Video Element (Hidden) */
+        #webgazerVideoFeed {
+            display: none;
+        }
+
+        /* Fullscreen Mask */
+        .mask {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(240, 242, 245, 0.9);
+            z-index: 0;
         }
 
         /* Footer Styling */
         footer {
-            margin-top: 30px;
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
             color: #777;
             font-size: 0.9em;
+            z-index: 1;
         }
 
         /* Responsive Design */
         @media (max-width: 768px) {
-            #videoFrame {
-                width: 150px;
-                height: 150px;
-            }
-
-            header h1 {
-                font-size: 2em;
-            }
-
             #calibrationMessage {
-                font-size: 1em;
+                font-size: 1.2em;
             }
         }
     </style>
 </head>
-
 <body>
-    <div class="mask"></div>
     <div class="container">
-        <header>
-            <h1>Calibration</h1>
-        </header>
-        <main>
-            <!-- Video Frame for Camera -->
-            <div id="videoFrame">
-                <video id="videoElement" autoplay playsinline></video>
-            </div>
+        <div class="mask"></div>
+        <div id="calibrationMessage">Calibration in progress... Please focus on each dot until it disappears.</div>
 
-            <div id="calibrationMessage">Initializing calibration...</div>
+        <!-- Calibration Points -->
+        <div id="calibrationDiv" class="calibration">
+            <div class="calibrationPoint" id="point1" style="top: 10%; left: 10%;"></div>
+            <div class="calibrationPoint" id="point2" style="top: 10%; left: 50%;"></div>
+            <div class="calibrationPoint" id="point3" style="top: 10%; left: 90%;"></div>
+            <div class="calibrationPoint" id="point4" style="top: 50%; left: 10%;"></div>
+            <div class="calibrationPoint" id="point5" style="top: 50%; left: 50%;"></div>
+            <div class="calibrationPoint" id="point6" style="top: 50%; left: 90%;"></div>
+            <div class="calibrationPoint" id="point7" style="top: 90%; left: 10%;"></div>
+            <div class="calibrationPoint" id="point8" style="top: 90%; left: 50%;"></div>
+            <div class="calibrationPoint" id="point9" style="top: 90%; left: 90%;"></div>
+        </div>
 
-            <!-- Calibration Points -->
-            <div id="calibrationDiv" class="calibration">
-                <div class="calibrationPoint" id="point1" style="top: 10%; left: 10%;"></div>
-                <div class="calibrationPoint" id="point2" style="top: 10%; left: 50%;"></div>
-                <div class="calibrationPoint" id="point3" style="top: 10%; left: 90%;"></div>
-                <div class="calibrationPoint" id="point4" style="top: 50%; left: 10%;"></div>
-                <div class="calibrationPoint" id="point5" style="top: 50%; left: 50%;"></div>
-                <div class="calibrationPoint" id="point6" style="top: 50%; left: 90%;"></div>
-                <div class="calibrationPoint" id="point7" style="top: 90%; left: 10%;"></div>
-                <div class="calibrationPoint" id="point8" style="top: 90%; left: 50%;"></div>
-                <div class="calibrationPoint" id="point9" style="top: 90%; left: 90%;"></div>
-            </div>
-        </main>
         <footer>
             <p>&copy; 2024 Eye Movement Research</p>
         </footer>
@@ -155,73 +111,39 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const videoElement = document.getElementById('videoElement');
             const calibrationPoints = document.querySelectorAll('.calibrationPoint');
             const calibrationMessage = document.getElementById('calibrationMessage');
             const totalPoints = calibrationPoints.length;
             let currentPoint = 0;
-            let calibrationSuccessful = false;
+            let calibrationSamples = 0;
+            const samplesPerPoint = 30; // Number of samples to collect per point
 
-            // Start the camera
-            startCamera();
-
-            // Initialize WebGazer after the video starts playing
-            videoElement.addEventListener('loadedmetadata', () => {
-                initializeWebGazer();
-                startCalibration();
-            });
-
-            function startCamera() {
-                console.log("Attempting to access camera...");
-                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-                    console.log("getUserMedia is available, attempting to access...");
-                    navigator.mediaDevices.getUserMedia({ video: true })
-                        .then(stream => {
-                            console.log("Camera access successful");
-                            videoElement.srcObject = stream;
-                        })
-                        .catch(error => {
-                            console.error('Error accessing the camera', error);
-                            calibrationMessage.textContent = 'Unable to access camera. Please check your settings.';
-                        });
-                } else {
-                    console.error('getUserMedia not supported on this browser.');
-                    calibrationMessage.textContent = 'Camera not supported on this browser.';
-                }
-            }
-
-            function stopCamera() {
-                const stream = videoElement.srcObject;
-                if (stream) {
-                    const tracks = stream.getTracks();
-                    tracks.forEach(track => track.stop());
-                    videoElement.srcObject = null;
-                }
-            }
+            // Initialize WebGazer
+            initializeWebGazer();
 
             function initializeWebGazer() {
-                webgazer.setGazeListener(function (data, elapsedTime) {
-                    if (data == null) {
-                        return;
-                    }
-                    // You can log gaze data here for debugging
-                    console.log(`Gaze Data - X: ${data.x}, Y: ${data.y}, Time: ${elapsedTime}`);
-                }).begin();
+                webgazer.setRegression('ridge') // You can choose the regression model
+                    .setTracker('clmtrackr') // You can choose the face tracker
+                    .begin()
+                    .showVideo(false)
+                    .showFaceOverlay(false)
+                    .showFaceFeedbackBox(false);
 
-                // Hide all WebGazer UI elements to prevent distraction
-                webgazer.showVideo(false).showFaceOverlay(false).showFaceFeedbackBox(false);
-                // Additionally, ensure no other UI elements are visible
-                const hideElements = ['webgazerVideoFeed', 'webgazerFaceOverlay', 'webgazerFaceFeedbackBox'];
-                hideElements.forEach(id => {
-                    const element = document.getElementById(id);
-                    if (element) {
-                        element.style.display = 'none';
-                    }
+                // Wait for the webgazer to be ready
+                webgazer.setGazeListener(function(data, elapsedTime) {
+                    // Gaze data is being received
+                });
+
+                // Start calibration after WebGazer is ready
+                webgazer.getTracker().on('prediction', function() {
+                    // Start calibration after initial prediction to ensure WebGazer is ready
+                    webgazer.getTracker().off('prediction'); // Remove this handler after it's called
+                    startCalibration();
                 });
             }
 
             function startCalibration() {
-                calibrationMessage.textContent = 'Calibration in progress... Please follow the blue dots.';
+                calibrationMessage.textContent = 'Calibration in progress... Please focus on each dot until it disappears.';
                 showNextCalibrationPoint();
             }
 
@@ -233,25 +155,31 @@
 
                 const point = calibrationPoints[currentPoint];
                 point.style.visibility = 'visible';
+                calibrationSamples = 0;
 
-                // After a short duration, hide the point and move to the next
-                setTimeout(() => {
-                    point.style.visibility = 'hidden';
-                    currentPoint++;
-                    showNextCalibrationPoint();
-                }, 1500); // Show each point for 1.5 seconds
+                // Collect gaze data samples for this point
+                const sampleInterval = setInterval(() => {
+                    calibrationSamples++;
+                    const x = point.offsetLeft + point.offsetWidth / 2;
+                    const y = point.offsetTop + point.offsetHeight / 2;
+                    webgazer.recordScreenPosition(x, y);
+
+                    if (calibrationSamples >= samplesPerPoint) {
+                        clearInterval(sampleInterval);
+                        point.style.visibility = 'hidden';
+                        currentPoint++;
+                        setTimeout(showNextCalibrationPoint, 500); // Short pause before next point
+                    }
+                }, 50); // Collect samples every 50ms
             }
 
             function finishCalibration() {
-                stopCamera(); // Stop the camera when calibration is complete
                 calibrationMessage.textContent = 'Calibration complete. Verifying...';
 
                 // Optional: Add verification logic here to ensure calibration quality
-                // For example, analyze gaze data to confirm calibration accuracy
 
                 // Simulate verification delay
                 setTimeout(() => {
-                    calibrationSuccessful = true;
                     calibrationMessage.textContent = 'Calibration successful. Redirecting...';
                     redirectToNextPage();
                 }, 2000);
@@ -265,10 +193,9 @@
 
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
-                // Implement data saving logic here, such as sending data to a server
+                webgazer.end();
             });
         });
     </script>
 </body>
-
 </html>

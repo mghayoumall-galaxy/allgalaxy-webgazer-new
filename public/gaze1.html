@@ -249,7 +249,7 @@
 
                 if (!isEligible) {
                     // Determine the specific reason for ineligibility
-                    let message = 'Unfortunately, you are not eligible for this study.';
+                    let message = 'Unfortunately, you are not eligible.';
                     if (age <= 18) {
                         message = 'You must be over 18 years old to participate.';
                     } else if (healthCondition !== 'no') {
@@ -259,7 +259,7 @@
                     eligibilityMessage.innerText = message;
                     eligibilityMessage.style.color = '#e63946'; // Red color for ineligibility
                 } else {
-                    eligibilityMessage.innerText = 'You are eligible for this study!';
+                    eligibilityMessage.innerText = 'You are eligible!';
                     eligibilityMessage.style.color = '#2a9d8f'; // Green color for eligibility
 
                     // Store user information in localStorage (if needed for later use)
