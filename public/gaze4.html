@@ -1,9 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eye Movement Data Collection & Cognitive Assessment</title>
     <!-- WebGazer for Eye Tracking -->
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
@@ -164,52 +162,6 @@
             color: #555;
         }
 
-        /* Drawing Upload Section */
-        #drawing-section {
-            margin: 20px 0;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #drawingUpload {
-            margin-top: 10px;
-        }
-
-        #uploadButton {
-            padding: 8px 16px;
-            font-size: 1em;
-            background-color: #17a2b8;
-            color: #ffffff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            margin-top: 10px;
-        }
-
-        #uploadButton:hover {
-            background-color: #138496;
-        }
-
-        #uploadStatus {
-            margin-top: 10px;
-            font-size: 1em;
-        }
-
-        /* Results Section */
-        #results-section {
-            margin: 20px 0;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #results-message {
-            font-size: 1.2em;
-            color: #28a745;
-        }
-
         /* Privacy Notice */
         #privacyNotice {
             margin: 20px 0;
@@ -260,7 +212,7 @@
 
         <!-- Privacy Notice -->
         <div id="privacyNotice">
-            <p><strong>Privacy Notice:</strong> All data is anonymized and stored securely. </p>
+            <p><strong>Privacy Notice:</strong> All data is anonymized and stored securely.</p>
         </div>
 
         <!-- Progress Bar -->
@@ -281,23 +233,14 @@
 
         <!-- Task Container -->
         <div id="task-container">
-            <!-- Dynamically generated visual search task or memory images will appear here -->
+            <!-- Dynamically generated visual search task will appear here -->
         </div>
 
         <!-- Calibration Message -->
         <div id="calibrationMessage">Press "Start Task" to begin.</div>
 
-        <!-- Drawing Upload Section -->
-        <div id="drawing-section">
-            <h2>Drawing Task</h2>
-            <p id="drawing-instruction">Please draw the target you found or the images you memorized on a piece of paper.</p>
-            <input type="file" id="drawingUpload" accept="image/*">
-            <button id="uploadButton">Upload Drawing</button>
-            <div id="uploadStatus"></div>
-        </div>
-
         <!-- Results Section -->
-        <div id="results-section">
+        <div id="results-section" style="display: none;">
             <h2>Assessment Complete</h2>
             <p id="results-message">Processing your data...</p>
         </div>
@@ -315,13 +258,8 @@
             const startButton = document.getElementById('startButton');
             const trialInfo = document.getElementById('trialInfo');
             const webcamVideo = document.getElementById('webcamVideo');
-            const drawingSection = document.getElementById('drawing-section');
-            const drawingUpload = document.getElementById('drawingUpload');
-            const uploadButton = document.getElementById('uploadButton');
-            const uploadStatus = document.getElementById('uploadStatus');
             const resultsSection = document.getElementById('results-section');
             const resultsMessage = document.getElementById('results-message');
-            const drawingInstruction = document.getElementById('drawing-instruction');
             const progressBar = document.getElementById('progress-bar');
 
             // Configuration
@@ -340,24 +278,6 @@
             const trialsPerCombination = 2; // Adjust to have a total of 10 search trials
 
             // Initialize trials
-            const memoryImages = [
-                'images/image1.jpg', // Ensure these images exist in the 'images' folder
-                'images/image2.jpg',
-                'images/image3.jpg'
-            ];
-
-            // Add memory trials first
-            for (let i = 0; i < memoryImages.length; i++) {
-                trials.push({
-                    taskType: 'memory',
-                    numberOfRings: 0,
-                    reactionTime: null,
-                    gazeData: [],
-                    image: memoryImages[i],
-                    drawingScore: null
-                });
-            }
-
             // Add search trials
             for (let task of taskTypes) {
                 for (let numRings of numberOfRingsOptions) {
@@ -366,19 +286,14 @@
                             taskType: task,
                             numberOfRings: numRings,
                             reactionTime: null,
-                            gazeData: [],
-                            drawingScore: null
+                            gazeData: []
                         });
                     }
                 }
             }
 
-            // Shuffle search trials only
-            const searchTrials = trials.slice(memoryImages.length);
-            shuffleArray(searchTrials);
-            // Limit to total of 10 search trials
-            const limitedSearchTrials = searchTrials.slice(0, 10);
-            trials = trials.slice(0, memoryImages.length).concat(limitedSearchTrials);
+            // Shuffle search trials
+            shuffleArray(trials);
 
             // Array to store all gaze data
             let allGazeData = [];
@@ -395,8 +310,8 @@
                 startButton.style.display = 'none';
                 startCamera()
                     .then(() => {
-                        calibrationMessage.textContent = 'Camera started. Preparing to start Visual Memory Task...';
-                        setTimeout(startVisualMemoryTask, 2000); // Delay before starting memory task
+                        calibrationMessage.textContent = 'Camera started. Preparing to start the task...';
+                        setTimeout(startNextTrial, 2000); // Start with the first visual search trial
                     })
                     .catch(error => {
                         console.error('Error starting camera:', error);
@@ -425,104 +340,6 @@
                 }
             }
 
-            // Start Visual Memory Task
-            function startVisualMemoryTask() {
-                trialInfo.textContent = `Visual Memory Task: Memorize the images for 10 seconds each.`;
-                displayMemoryImages(0);
-            }
-
-            // Display Memory Images Sequentially
-            function displayMemoryImages(index) {
-                if (index >= memoryImages.length) {
-                    calibrationMessage.textContent = 'Visual Memory Task Completed.';
-                    showDrawingSection('memory');
-                    return;
-                }
-
-                // Display the image
-                taskContainer.innerHTML = `<img src="${memoryImages[index]}" alt="Memory Image" style="max-width: 100%; max-height: 500px;">`;
-                calibrationMessage.textContent = `Memorize the image (${index + 1} of ${memoryImages.length}) for 10 seconds.`;
-
-                // Start timer for 10 seconds
-                setTimeout(() => {
-                    displayMemoryImages(index + 1);
-                }, 10000);
-            }
-
-            // Show Drawing Upload Section
-            function showDrawingSection(taskType) {
-                taskContainer.innerHTML = '';
-                calibrationMessage.textContent = taskType === 'memory' ?
-                    'Please draw the images you memorized on a piece of paper.' :
-                    'Please draw the target you found on a piece of paper.';
-                drawingInstruction.textContent = taskType === 'memory' ?
-                    'Please draw the images you memorized on a piece of paper.' :
-                    'Please draw the target you found on a piece of paper.';
-                drawingSection.style.display = 'flex';
-
-                // Set the current task type for drawing
-                drawingSection.dataset.taskType = taskType;
-            }
-
-            // Handle Drawing Upload
-            uploadButton.addEventListener('click', function () {
-                const files = drawingUpload.files;
-                if (files.length === 0) {
-                    uploadStatus.textContent = 'Please select a drawing to upload.';
-                    uploadStatus.style.color = 'red';
-                    return;
-                }
-
-                const file = files[0];
-                if (!file.type.startsWith('image/')) {
-                    uploadStatus.textContent = 'Invalid file type. Please upload an image.';
-                    uploadStatus.style.color = 'red';
-                    return;
-                }
-
-                if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                    uploadStatus.textContent = 'File is too large. Please upload an image smaller than 5MB.';
-                    uploadStatus.style.color = 'red';
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const imgData = e.target.result;
-                    uploadStatus.innerHTML = `<p style="color: green;">Drawing uploaded successfully.</p><img src="${imgData}" alt="Uploaded Drawing" style="max-width: 300px; max-height: 300px;">`;
-                    // Implement drawing scoring here
-                    const drawingScore = scoreDrawing(file); // Placeholder function
-                    calibrationMessage.textContent = `Drawing Score: ${drawingScore}/5`;
-
-                    // Store drawing score if needed
-                    if (trialPointer < memoryImages.length) { // After memory task
-                        trials[trialPointer].drawingScore = drawingScore;
-                    } else { // After search task
-                        trials[trialPointer - 1].drawingScore = drawingScore;
-                    }
-
-                    // Proceed to next task after a short delay
-                    setTimeout(() => {
-                        drawingSection.style.display = 'none';
-                        uploadStatus.innerHTML = '';
-                        drawingUpload.value = ''; // Reset file input
-                        if (trialPointer < trials.length) {
-                            startNextTrial();
-                        } else {
-                            endExperiment();
-                        }
-                    }, 1000);
-                };
-                reader.readAsDataURL(file);
-            });
-
-            // Placeholder Function for Drawing Scoring
-            function scoreDrawing(file) {
-                // Implement your drawing scoring logic here
-                // For demonstration, returning a random score between 0 and 5
-                return Math.floor(Math.random() * 6);
-            }
-
             // Start the next trial (Visual Search)
             function startNextTrial() {
                 if (trialPointer >= trials.length) {
@@ -533,14 +350,6 @@
                 const trial = trials[trialPointer];
                 trialInfo.textContent = `Trial ${trialPointer + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`;
 
-                if (trial.taskType === 'memory') {
-                    // Handle memory trials separately if any additional exist
-                    displayMemoryImagesForTrial(trialPointer);
-                    trialPointer++;
-                    updateProgress();
-                    return;
-                }
-
                 createSearchTask(trial.taskType, trial.numberOfRings, trialPointer);
                 calibrationMessage.textContent = 'Please find the target as quickly as possible.';
                 trialStartTime = Date.now();
@@ -548,16 +357,6 @@
                 startTimer(trialPointer);
                 trialPointer++;
                 updateProgress();
-            }
-
-            // Display Memory Images for Trials (if any additional memory tasks exist)
-            function displayMemoryImagesForTrial(trialIndex) {
-                // Assuming no additional memory tasks in the search phase
-                // If there are, implement accordingly
-                // For now, proceed to the next trial
-                setTimeout(() => {
-                    startNextTrial();
-                }, 1000);
             }
 
             // Create Search Task
@@ -728,5 +527,4 @@
         });
     </script>
 </body>
-
 </html>
