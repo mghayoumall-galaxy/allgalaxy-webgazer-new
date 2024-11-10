@@ -12,8 +12,8 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f7f7f7;
-            color: #333333;
+            background-color: #ffffff; /* White background */
+            color: #000000; /* Black text */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -23,7 +23,7 @@
         .container {
             width: 90%;
             max-width: 600px;
-            background: #ffffff;
+            background: #f0f0f0; /* Light gray background for better contrast */
             border-radius: 15px;
             padding: 40px;
             text-align: center;
@@ -62,7 +62,7 @@
             text-align: left;
             width: 100%;
             max-width: 500px;
-            color: #333333;
+            color: #000000;
             line-height: 44px;
         }
 
@@ -75,7 +75,7 @@
             border-radius: 5px;
             border: 1px solid #007bff;
             background-color: #ffffff;
-            color: #333333;
+            color: #000000;
             font-size: 1em;
             height: 44px;
             outline: none;
@@ -91,11 +91,9 @@
         .form-section {
             width: 100%;
             max-width: 500px;
-            height: 60px;
             margin-bottom: 15px;
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            flex-direction: column;
         }
 
         /* Button Styling */
@@ -137,6 +135,12 @@
             font-size: 0.9em;
         }
 
+        /* Logo Styling */
+        .footer-logo {
+            margin-top: 20px;
+            max-width: 150px;
+        }
+
         /* Responsive Design */
         @media (max-width: 768px) {
             .container {
@@ -163,7 +167,7 @@
             }
 
             .form-section {
-                height: 50px;
+                height: auto;
             }
 
             button {
@@ -227,6 +231,7 @@
                 </div>
 
                 <button type="submit">Submit</button>
+                <img src="images/logo.png" alt="AllGalaxy Logo" class="footer-logo">
             </form>
             <div id="eligibilityMessage"></div>
         </main>
