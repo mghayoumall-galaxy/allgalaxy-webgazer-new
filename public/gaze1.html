@@ -23,7 +23,7 @@
         .container {
             width: 90%;
             max-width: 600px;
-            background: #f0f0f0; /* Light gray background for better contrast */
+            background: #ffffff; /* White background */
             border-radius: 15px;
             padding: 40px;
             text-align: center;
@@ -130,15 +130,18 @@
 
         /* Footer Styling */
         footer {
-            margin-top: 40px;
+            margin-top: 10px; /* Reduced margin to minimize space */
             color: #777777;
             font-size: 0.9em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         /* Logo Styling */
         .footer-logo {
-            margin-top: 20px;
-            max-width: 150px;
+            margin-top: 5px; /* Further reduced margin to eliminate extra space */
+            max-width: 60px; /* Further reduced size */
         }
 
         /* Responsive Design */
@@ -174,6 +177,11 @@
                 font-size: 1em;
                 padding: 10px 25px;
                 height: 45px;
+            }
+
+            .footer-logo {
+                max-width: 50px; /* Further reduce size on smaller screens */
+                margin-top: 3px;
             }
         }
     </style>
