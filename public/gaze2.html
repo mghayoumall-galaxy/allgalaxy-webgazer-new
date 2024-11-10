@@ -3,99 +3,129 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Instructions - Eye Tracking Study</title>
+    <title>Instructions - Alzheimer's Assessment</title>
     <style>
         /* Basic Reset */
-        body, html {
+        body,
+        html {
+            height: 100%;
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
-            color: #333;
+            background-color: #ffffff; /* White background */
+            color: #000000; /* Black text */
             display: flex;
             justify-content: center;
             align-items: center;
+            overflow: hidden; /* Prevent scrolling */
         }
 
         /* Container */
         .container {
             width: 90%;
             max-width: 600px;
-            background: #ffffff;
+            background: #ffffff; /* White background */
             border-radius: 15px;
-            padding: 40px;
+            padding: 30px 20px; /* Reduced padding to fit content without scrolling */
             text-align: center;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 90vh; /* Ensure it fits within the viewport */
         }
 
         /* Header Styling */
         header {
-            margin-bottom: 30px;
-        }
-
-        header img {
-            width: 120px;
             margin-bottom: 20px;
         }
 
         header h1 {
-            font-size: 2.5em;
+            font-size: 2em; /* Adjusted font size */
             font-weight: 700;
             color: #007BFF;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         /* Main Content */
+        main {
+            flex-grow: 1;
+        }
+
         main p {
-            font-size: 1.2em;
-            line-height: 1.8;
-            margin-bottom: 30px;
-            color: #555;
+            font-size: 1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+            color: #333333;
+            text-align: left;
         }
 
         /* Button Styling */
         #proceedButton {
-            padding: 15px 40px;
+            padding: 12px 25px;
             border: none;
             border-radius: 8px;
             background-color: #28a745;
             color: #ffffff;
-            font-size: 1.2em;
+            font-size: 1em;
             font-weight: bold;
             cursor: pointer;
             transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 300px;
+            align-self: center;
         }
 
         #proceedButton:hover {
             background-color: #218838;
             transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
         }
 
         /* Footer Styling */
         footer {
-            margin-top: 40px;
-            color: #777;
+            position: relative;
+            margin-top: 20px;
+            color: #777777;
             font-size: 0.9em;
+            text-align: center;
+        }
+
+        /* Logo Styling */
+        .footer-logo {
+            position: absolute;
+            bottom: -25px; /* Position the logo overlapping the footer */
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: 60px; /* Smaller size */
         }
 
         /* Responsive Design */
         @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+                height: 95vh;
+            }
+
             header h1 {
-                font-size: 2em;
+                font-size: 1.8em;
             }
 
             main p {
-                font-size: 1em;
+                font-size: 0.95em;
             }
 
             #proceedButton {
-                padding: 12px 25px;
-                font-size: 1em;
+                padding: 10px 20px;
+                font-size: 0.95em;
+                max-width: 250px;
+            }
+
+            .footer-logo {
+                max-width: 50px;
+                bottom: -20px;
             }
         }
     </style>
@@ -104,16 +134,24 @@
 <body>
     <div class="container">
         <header>
-            <img src="images/logo.png" alt="Eye Movement Research Logo">
-            <h1>Instructions</h1>
+            <h1>Alzheimer’s Assessment Instructions</h1>
         </header>
         <main>
-            <p>Please follow the instructions on the next screen.</p>
-            <p>The process will take approximately 5 minutes.</p>
-            <button id="proceedButton">Proceed to Assessment Test</button>
+            <p>Welcome to the Alzheimer's Early Detection Assessment. This assessment is designed to help identify early signs of cognitive decline.</p>
+            <p>Here’s what you need to know before starting:</p>
+            <ul style="text-align: left; margin-left: 20px; margin-bottom: 20px;">
+                <li><strong>Duration:</strong> The entire process will take approximately 10-15 minutes.</li>
+                <li><strong>Equipment:</strong> Ensure your device has a functioning webcam and a stable internet connection.</li>
+                <li><strong>Environment:</strong> Choose a quiet and well-lit place to complete the assessment without interruptions.</li>
+                <li><strong>Instructions:</strong> Follow the on-screen instructions carefully. If you encounter any issues, you can restart the assessment at any time.</li>
+                <li><strong>Privacy:</strong> Your data is secure and confidential. It will only be used for assessment purposes.</li>
+            </ul>
+            <p>Once you are ready, click the button below to begin the assessment.</p>
+            <button id="proceedButton">Proceed to Assessment</button>
         </main>
         <footer>
-            <p>&copy; 2024 Eye Movement Research. All rights reserved.</p>
+            <p>&copy; 2024 Opyrithis Assessment. All rights reserved.</p>
+            <img src="images/logo.png" alt="Opyrithis Assessment Logo" class="footer-logo">
         </footer>
     </div>
 
@@ -121,7 +159,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const proceedButton = document.getElementById('proceedButton');
             proceedButton.addEventListener('click', function () {
-                window.location.href = 'gaze3.html';
+                window.location.href = 'assessment.html'; // Updated to a generic assessment page
             });
         });
     </script>
