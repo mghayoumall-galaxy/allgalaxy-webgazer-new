@@ -30,6 +30,7 @@
             flex: 1;
             width: 100%;
             max-width: 1200px;
+            margin: 0 auto;
             text-align: center;
             padding: 20px;
             background-color: #ffffff; /* White background */
@@ -424,10 +425,8 @@
                         // All distractors point upward, one target points downward
                         if (i === targetPosition) {
                             ring.textContent = '↓'; // Downward for target
-                            // No background color highlighting
                         } else {
                             ring.textContent = '↑'; // Upward for distractors
-                            // Uniform background
                         }
                     }
 
@@ -584,8 +583,6 @@
 
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
-                // Optionally, clear localStorage after displaying results
-                // localStorage.removeItem('experimentData');
                 webgazer.end();
             });
 
