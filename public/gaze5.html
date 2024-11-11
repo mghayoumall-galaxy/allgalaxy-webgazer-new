@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Eye Movement Analysis Results</title>
+    <title>Alzheimer’s Assessment Results</title>
     <!-- TensorFlow.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
     <!-- Chart.js for Visualizations -->
@@ -16,7 +16,7 @@
             box-sizing: border-box;
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f7f7f7;
+            background-color: #ffffff; /* Changed to white */
             color: #333;
             display: flex;
             justify-content: center;
@@ -28,11 +28,12 @@
         .container {
             text-align: center;
             padding: 40px;
-            max-width: 700px;
+            max-width: 900px;
             background-color: #fff;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             border-radius: 15px;
             margin: 20px;
+            padding-bottom: 100px; /* Added padding to prevent footer overlap */
         }
 
         /* Header Styling */
@@ -44,18 +45,27 @@
             padding-bottom: 10px;
         }
 
-        /* Result Section */
+        /* Result Sections */
+        .result-section {
+            margin: 30px 0;
+        }
+
+        .result-section h2 {
+            font-size: 2em;
+            margin-bottom: 15px;
+            color: #007BFF;
+        }
+
         .result {
             font-size: 1.8em;
             font-weight: bold;
             color: #333;
-            margin: 30px 0;
+            margin: 10px 0;
         }
 
-        /* Advice Section */
         .advice {
             font-size: 1.2em;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             color: #555;
         }
 
@@ -71,6 +81,7 @@
             cursor: pointer;
             text-decoration: none;
             transition: background-color 0.3s, transform 0.2s;
+            margin-top: 20px;
         }
 
         .btn:hover {
@@ -78,8 +89,8 @@
             transform: translateY(-2px);
         }
 
-        /* Chart Container */
-        #chart-container {
+        /* Chart Containers */
+        .chart-container {
             width: 100%;
             max-width: 600px;
             margin: 0 auto 40px auto;
@@ -108,39 +119,111 @@
                 font-size: 1em;
             }
 
-            #chart-container {
+            .chart-container {
                 max-width: 100%;
+            }
+        }
+
+        /* Footer Styling */
+        footer {
+            width: 100%;
+            background: #ffffff; /* Changed to white */
+            color: #777;
+            padding: 15px;
+            border-radius: 20px 20px 0 0;
+            font-size: 0.9em;
+            text-align: center;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Footer Logo Styling */
+        .footer-logo {
+            margin-top: 5px; /* Reduced margin */
+            max-width: 40px; /* Reduced size */
+        }
+
+        @media (max-width: 768px) {
+            .footer-logo {
+                max-width: 30px; /* Further reduced size on mobile */
+                margin-top: 4px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="container">
         <header>
-            <h1>Analysis Results</h1>
+            <h1>Alzheimer’s Assessment Results</h1>
         </header>
 
-        <div class="result">
-            <p>Result: <span id="predictionResult">Loading...</span></p>
+        <!-- Privacy Notice -->
+        <div id="privacyNotice">
+            <p><strong>Privacy Notice:</strong> All data is anonymized and stored securely.</p>
         </div>
 
-        <div class="advice">
-            <p id="advice">Please wait while we process your data...</p>
+        <!-- First Report: Drawing Analysis -->
+        <div class="result-section" id="drawing-report">
+            <h2>Drawing Analysis</h2>
+            <div class="result">
+                Result: <span id="drawingPrediction">Loading...</span>
+            </div>
+            <div class="advice" id="drawingAdvice">Please wait while we process your drawing...</div>
+            <div class="chart-container">
+                <canvas id="drawingChart" width="400" height="200" style="max-width: 100%;"></canvas>
+            </div>
         </div>
 
-        <!-- Chart Container -->
-        <div id="chart-container">
-            <canvas id="resultsChart" width="400" height="200" style="max-width: 100%;"></canvas>
+        <!-- Second Report: Task Performance -->
+        <div class="result-section" id="task-report">
+            <h2>Task Performance Analysis</h2>
+            <div class="result">
+                Correct Answers: <span id="correctCount">0</span>
+            </div>
+            <div class="result">
+                Wrong Answers: <span id="wrongCount">0</span>
+            </div>
+            <div class="result">
+                Average Reaction Time: <span id="averageReactionTime">0</span> ms
+            </div>
+            <div class="advice" id="taskAdvice">Analyzing your task performance...</div>
+            <div class="chart-container">
+                <canvas id="taskChart" width="400" height="200" style="max-width: 100%;"></canvas>
+            </div>
         </div>
+
+        <!-- Combined Charts (Optional) -->
+        <!-- You can uncomment and customize these if needed -->
+        <!--
+        <div class="chart-container">
+            <canvas id="combinedChart" width="400" height="200" style="max-width: 100%;"></canvas>
+        </div>
+        -->
 
         <a href="gaze4.html" class="btn">Start Again</a>
     </div>
 
+    <footer>
+        <img src="images/logo.png" alt="Alzheimer’s Assessment Logo" class="footer-logo">
+        <p>&copy; 2024 Alzheimer's Assessment Tool. All rights reserved.</p>
+    </footer>
+
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const predictionResult = document.getElementById('predictionResult');
-            const advice = document.getElementById('advice');
-            const resultsChartCtx = document.getElementById('resultsChart').getContext('2d');
+            const drawingPrediction = document.getElementById('drawingPrediction');
+            const drawingAdvice = document.getElementById('drawingAdvice');
+            const drawingChartCtx = document.getElementById('drawingChart').getContext('2d');
+
+            const correctCountEl = document.getElementById('correctCount');
+            const wrongCountEl = document.getElementById('wrongCount');
+            const averageReactionTimeEl = document.getElementById('averageReactionTime');
+            const taskAdvice = document.getElementById('taskAdvice');
+            const taskChartCtx = document.getElementById('taskChart').getContext('2d');
 
             // Function to safely retrieve data from localStorage
             function getExperimentData() {
@@ -153,22 +236,90 @@
 
             // Start the process by retrieving data and displaying results
             const experimentData = getExperimentData();
-            displayResults(experimentData);
+            if (experimentData) {
+                displayDrawingResults(experimentData);
+                displayTaskResults(experimentData);
+            } else {
+                drawingPrediction.textContent = 'No data available.';
+                drawingAdvice.textContent = 'Please complete the experiment first.';
+                correctCountEl.textContent = 'N/A';
+                wrongCountEl.textContent = 'N/A';
+                averageReactionTimeEl.textContent = 'N/A';
+                taskAdvice.textContent = 'Please complete the experiment first.';
+            }
 
-            // Display Prediction Results
-            async function displayResults(experimentData) {
-                if (!experimentData) {
-                    predictionResult.textContent = 'No data available.';
-                    advice.textContent = 'Please complete the experiment first.';
+            // Display Drawing Prediction Results
+            async function displayDrawingResults(experimentData) {
+                if (!experimentData.drawingData) {
+                    drawingPrediction.textContent = 'No drawing data available.';
+                    drawingAdvice.textContent = 'Please complete the drawing task first.';
                     return;
                 }
 
-                const prediction = await makePrediction(experimentData);
-                predictionResult.textContent = mapPredictionToText(prediction);
-                advice.textContent = getAdviceBasedOnPrediction(prediction);
+                try {
+                    // Load the trained model
+                    const model = await tf.loadLayersModel('model/model.json'); // Ensure the path is correct
 
-                // Display Additional Metrics
-                displayMetrics(experimentData);
+                    // Preprocess the drawing image
+                    const img = new Image();
+                    img.src = experimentData.drawingData; // Assuming drawingData is a base64 image string
+                    img.onload = async function () {
+                        const tensor = tf.browser.fromPixels(img)
+                            .resizeNearestNeighbor([224, 224]) // Adjust based on your model's input size
+                            .toFloat()
+                            .expandDims();
+                        const normalized = tensor.div(255.0); // Normalize as per training
+
+                        // Make prediction
+                        const prediction = model.predict(normalized);
+                        const predictedClass = prediction.argMax(1).dataSync()[0]; // Assuming classification
+
+                        // Map prediction to meaningful text
+                        const predictionText = mapPredictionToText(predictedClass);
+                        drawingPrediction.textContent = predictionText;
+
+                        // Provide advice based on prediction
+                        const adviceText = getAdviceBasedOnPrediction(predictedClass);
+                        drawingAdvice.textContent = adviceText;
+
+                        // Optionally, display a chart (e.g., confidence scores)
+                        // For simplicity, we'll show a dummy chart here
+                        // Replace with actual data if available
+
+                        // Example: Confidence scores (assuming 3 classes)
+                        /*
+                        const confidenceScores = prediction.dataSync();
+                        new Chart(drawingChartCtx, {
+                            type: 'pie',
+                            data: {
+                                labels: ['No Alzheimer\'s', 'Mild Cognitive Impairment', 'Alzheimer\'s Disease'],
+                                datasets: [{
+                                    data: confidenceScores,
+                                    backgroundColor: [
+                                        '#28a745',
+                                        '#ffc107',
+                                        '#dc3545'
+                                    ],
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    title: {
+                                        display: true,
+                                        text: 'Drawing Analysis Confidence Scores'
+                                    }
+                                }
+                            },
+                        });
+                        */
+                    };
+
+                } catch (error) {
+                    console.error('Error processing drawing:', error);
+                    drawingPrediction.textContent = 'An error occurred during analysis.';
+                    drawingAdvice.textContent = 'Please try again or contact support.';
+                }
             }
 
             // Map Prediction to Meaningful Text
@@ -186,7 +337,7 @@
             function getAdviceBasedOnPrediction(prediction) {
                 switch (prediction) {
                     case 0:
-                        return 'Your eye movement patterns are normal.';
+                        return 'Your drawing patterns are normal.';
                     case 1:
                         return 'There are signs of mild cognitive impairment. Consider consulting a healthcare professional.';
                     case 2:
@@ -196,331 +347,78 @@
                 }
             }
 
-            // Display Metrics Using Chart.js
-            function displayMetrics(experimentData) {
-                const reactionTimes = experimentData.trials
-                    .filter(trial => trial.reactionTime !== null)
-                    .map(trial => trial.reactionTime);
-
-                const reactionTimeLabels = reactionTimes.map((rt, index) => `Trial ${index + 1}`);
-
-                const data = {
-                    labels: reactionTimeLabels,
-                    datasets: [{
-                        label: 'Reaction Time (ms)',
-                        data: reactionTimes,
-                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-                        borderColor: 'rgba(54, 162, 235, 1)',
-                        borderWidth: 1
-                    }]
-                };
-
-                const config = {
-                    type: 'bar',
-                    data: data,
-                    options: {
-                        responsive: true,
-                        scales: {
-                            y: {
-                                beginAtZero: true,
-                                title: {
-                                    display: true,
-                                    text: 'Reaction Time (ms)'
-                                }
-                            },
-                            x: {
-                                title: {
-                                    display: true,
-                                    text: 'Trials'
-                                }
-                            }
-                        },
-                        plugins: {
-                            title: {
-                                display: true,
-                                text: 'Reaction Times Across Trials'
-                            }
-                        }
-                    },
-                };
-
-                new Chart(resultsChartCtx, config);
-            }
-
-            // Make Prediction using TensorFlow.js Model
-            async function makePrediction(experimentData) {
-                try {
-                    // Extract features from gaze data
-                    const features = extractFeatures(experimentData);
-
-                    // Normalize or preprocess features as required by your model
-                    // Adjust normalization based on your model's training
-                    // IMPORTANT: Ensure that this matches your model's expected input
-                    const normalizedFeatures = normalizeFeatures(features);
-
-                    // Create tensor from features
-                    const inputTensor = tf.tensor2d([normalizedFeatures]);
-
-                    // Load the model
-                    const model = await tf.loadLayersModel('model/model.json'); // Ensure the path is correct
-
-                    // Make prediction
-                    const prediction = model.predict(inputTensor);
-                    const predictedClass = prediction.argMax(1).dataSync()[0]; // Assuming classification
-
-                    // Check if prediction is valid
-                    if (predictedClass === undefined || predictedClass === null) {
-                        throw new Error('Invalid prediction result.');
-                    }
-
-                    console.log('Predicted Class:', predictedClass); // For debugging
-
-                    // Optionally, store the prediction back into experimentData
-                    experimentData.prediction = predictedClass;
-                    localStorage.setItem('experimentData', JSON.stringify(experimentData));
-
-                    return predictedClass;
-                } catch (error) {
-                    console.error('Prediction error:', error);
-                    predictionResult.textContent = 'An error occurred during prediction.';
-                    advice.textContent = 'Please try again or contact support.';
-                    return null;
-                }
-            }
-
-            // Feature Extraction Function
-            function extractFeatures(experimentData) {
-                const allGazeData = experimentData.allGazeData || [];
+            // Display Task Performance Results
+            function displayTaskResults(experimentData) {
                 const trials = experimentData.trials || [];
-                const targetPositions = experimentData.targetPositions || [];
 
-                // Combine gaze data from all trials
-                let combinedGazeData = [];
-                trials.forEach(trial => {
-                    combinedGazeData = combinedGazeData.concat(trial.gazeData);
-                });
+                const correctCount = trials.filter(trial => trial.reactionTime !== null && trial.gazeData.length > 0).length;
+                const wrongCount = trials.length - correctCount;
 
-                // Extract features
-                const features = {
-                    averageReactionTime: computeAverageReactionTime(trials),
-                    saccadicLatency: computeSaccadicLatency(trials),
-                    saccadicAccuracy: computeSaccadicAccuracy(trials, targetPositions),
-                    fixationDuration: computeFixationDuration(combinedGazeData),
-                    numberOfSaccades: computeNumberOfSaccades(combinedGazeData),
-                    averageSaccadeLength: computeAverageSaccadeLength(combinedGazeData),
-                    gazeEntropy: computeGazeEntropy(combinedGazeData),
-                    scanpathLength: computeScanpathLength(combinedGazeData)
-                };
+                correctCountEl.textContent = correctCount;
+                wrongCountEl.textContent = wrongCount;
 
-                return features;
-            }
-
-            // Normalization Function
-            function normalizeFeatures(features) {
-                // Define the max values for each feature based on your training data
-                const maxValues = {
-                    averageReactionTime: 5000, // Example max reaction time in ms
-                    saccadicLatency: 1000,
-                    saccadicAccuracy: 1,
-                    fixationDuration: 1000,
-                    numberOfSaccades: 100,
-                    averageSaccadeLength: 500,
-                    gazeEntropy: 5,
-                    scanpathLength: 10000
-                };
-
-                const normalizedFeatures = [];
-                for (let key in features) {
-                    if (maxValues[key]) {
-                        normalizedFeatures.push(features[key] / maxValues[key]);
-                    } else {
-                        normalizedFeatures.push(features[key]);
-                    }
-                }
-                return normalizedFeatures;
-            }
-
-            // Feature Extraction Implementations
-
-            function computeAverageReactionTime(trials) {
+                // Compute Average Reaction Time
                 const reactionTimes = trials
                     .filter(trial => trial.reactionTime !== null)
                     .map(trial => trial.reactionTime);
-                if (reactionTimes.length === 0) return 0;
-                const averageRT = reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length;
-                return averageRT;
-            }
+                const averageReactionTime = reactionTimes.length > 0
+                    ? Math.round(reactionTimes.reduce((a, b) => a + b, 0) / reactionTimes.length)
+                    : 0;
+                averageReactionTimeEl.textContent = averageReactionTime;
 
-            function computeSaccadicLatency(trials) {
-                const saccadicLatencies = trials.map(trial => {
-                    return computeSaccadicLatencySingle(trial.gazeData);
-                }).filter(latency => latency !== null);
-                return saccadicLatencies.length > 0 ? (saccadicLatencies.reduce((a, b) => a + b, 0) / saccadicLatencies.length) : 0;
-            }
+                // Provide advice based on performance
+                const taskAdviceText = getTaskAdvice(correctCount, wrongCount, averageReactionTime);
+                taskAdvice.textContent = taskAdviceText;
 
-            function computeSaccadicLatencySingle(gazeData) {
-                const velocityThreshold = 1000; // pixels per second
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue;
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const velocity = distance / dt;
-                    if (velocity > velocityThreshold) {
-                        return gazeData[i].timestamp; // Time to first saccade
-                    }
-                }
-                return null;
-            }
-
-            function computeSaccadicAccuracy(trials, targetPositions) {
-                const accuracies = trials.map((trial, index) => {
-                    return computeSaccadicAccuracySingle(trial.gazeData, index, targetPositions, trial.numberOfRings);
-                }).filter(acc => acc !== null);
-                return accuracies.length > 0 ? (accuracies.reduce((a, b) => a + b, 0) / accuracies.length) : 0;
-            }
-
-            function computeSaccadicAccuracySingle(gazeData, trialIndex, targetPositions, numberOfRings) {
-                const targetPosition = targetPositions[trialIndex];
-                if (targetPosition === undefined || targetPosition === null) return 0;
-
-                const targetCoords = mapPositionToCoordinates(targetPosition, numberOfRings);
-                if (!targetCoords) return 0;
-
-                const lastGaze = gazeData[gazeData.length - 1];
-                if (!lastGaze) return 0;
-
-                const distance = Math.sqrt(Math.pow(lastGaze.x - targetCoords.x, 2) + Math.pow(lastGaze.y - targetCoords.y, 2));
-                const accuracy = distance < 50 ? 1 : 0; // Within 50 pixels is accurate
-                return accuracy;
-            }
-
-            function computeFixationDuration(gazeData) {
-                let fixationDurations = [];
-                let currentFixationStart = null;
-                let currentFixationEnd = null;
-                const fixationThreshold = 50; // pixels
-                const minFixationDuration = 100; // milliseconds
-
-                for (let i = 0; i < gazeData.length; i++) {
-                    const point = gazeData[i];
-                    if (i === 0) {
-                        currentFixationStart = point.timestamp;
-                        currentFixationEnd = point.timestamp;
-                        continue;
-                    }
-
-                    const prevPoint = gazeData[i - 1];
-                    const distance = Math.sqrt(Math.pow(point.x - prevPoint.x, 2) + Math.pow(point.y - prevPoint.y, 2));
-
-                    if (distance < fixationThreshold) {
-                        currentFixationEnd = point.timestamp;
-                    } else {
-                        const duration = currentFixationEnd - currentFixationStart;
-                        if (duration >= minFixationDuration) {
-                            fixationDurations.push(duration);
+                // Display a Chart for Correct vs Incorrect Answers
+                new Chart(taskChartCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['Correct', 'Incorrect'],
+                        datasets: [{
+                            data: [correctCount, wrongCount],
+                            backgroundColor: [
+                                '#28a745',
+                                '#dc3545'
+                            ],
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Task Performance: Correct vs Incorrect Answers'
+                            }
                         }
-                        currentFixationStart = point.timestamp;
-                        currentFixationEnd = point.timestamp;
-                    }
-                }
-
-                const finalDuration = currentFixationEnd - currentFixationStart;
-                if (finalDuration >= minFixationDuration) {
-                    fixationDurations.push(finalDuration);
-                }
-
-                if (fixationDurations.length === 0) return 0;
-                const averageFixationDuration = fixationDurations.reduce((a, b) => a + b, 0) / fixationDurations.length;
-                return averageFixationDuration;
-            }
-
-            function computeNumberOfSaccades(gazeData) {
-                const velocityThreshold = 1000; // pixels per second
-                let saccadeCount = 0;
-
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue;
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const velocity = distance / dt;
-                    if (velocity > velocityThreshold) {
-                        saccadeCount++;
-                    }
-                }
-
-                return saccadeCount;
-            }
-
-            function computeAverageSaccadeLength(gazeData) {
-                const velocityThreshold = 1000; // pixels per second
-                let totalDistance = 0;
-                let saccadeCount = 0;
-
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dt = (gazeData[i].timestamp - gazeData[i - 1].timestamp) / 1000; // seconds
-                    if (dt === 0) continue;
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    const velocity = distance / dt;
-                    if (velocity > velocityThreshold) {
-                        totalDistance += distance;
-                        saccadeCount++;
-                    }
-                }
-
-                return saccadeCount > 0 ? totalDistance / saccadeCount : 0;
-            }
-
-            function computeGazeEntropy(gazeData) {
-                const gridSize = 50; // Define grid cell size
-                const grid = {};
-                gazeData.forEach(point => {
-                    const x = Math.floor(point.x / gridSize);
-                    const y = Math.floor(point.y / gridSize);
-                    const key = `${x},${y}`;
-                    grid[key] = (grid[key] || 0) + 1;
+                    },
                 });
+            }
 
-                const totalPoints = gazeData.length;
-                let entropy = 0;
-                for (let key in grid) {
-                    const p = grid[key] / totalPoints;
-                    entropy -= p * Math.log2(p);
+            // Provide Advice Based on Task Performance
+            function getTaskAdvice(correct, wrong, avgRT) {
+                if (correct > wrong && avgRT < 3000) { // Thresholds can be adjusted
+                    return 'Excellent performance! Your task metrics indicate healthy cognitive function.';
+                } else if (correct >= wrong && avgRT < 5000) {
+                    return 'Good performance. However, consider monitoring your cognitive health regularly.';
+                } else {
+                    return 'Your task performance shows potential signs of cognitive impairment. It is recommended to consult a healthcare professional.';
                 }
-                return entropy;
             }
 
-            function computeScanpathLength(gazeData) {
-                let totalDistance = 0;
-                for (let i = 1; i < gazeData.length; i++) {
-                    const dx = gazeData[i].x - gazeData[i - 1].x;
-                    const dy = gazeData[i].y - gazeData[i - 1].y;
-                    totalDistance += Math.sqrt(dx * dx + dy * dy);
-                }
-                return totalDistance;
+            // Optionally, display a combined chart
+            /*
+            function displayCombinedChart(drawingData, taskData) {
+                // Implement combined chart logic if needed
             }
-
-            // Map ring index to screen coordinates
-            function mapPositionToCoordinates(index, totalRings) {
-                const angle = (2 * Math.PI / totalRings) * index;
-                const radius = 200; // Distance from center in pixels
-                const centerX = window.innerWidth / 2;
-                const centerY = window.innerHeight / 2;
-                const x = centerX + radius * Math.cos(angle);
-                const y = centerY + radius * Math.sin(angle);
-                return { x, y };
-            }
+            */
 
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
                 // Implement data saving logic here, such as sending data to a server
+                // For example, you can clear the localStorage if desired
+                // localStorage.removeItem('experimentData');
             });
-        });
-    </script>
-</body>
+        </script>
+    </body>
 </html>
