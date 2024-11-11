@@ -101,11 +101,13 @@
         /* Task Container */
         #task-container {
             margin: 20px 0;
-            display: grid;
+            display: none; /* Hidden initially */
             grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
             gap: 15px;
             width: 100%;
             max-width: 800px;
+            /* Ensure grid layout */
+            display: grid;
         }
 
         /* Ring Styling */
@@ -238,6 +240,12 @@
                 max-width: 30px; /* Reduced size on mobile */
                 margin-top: 4px;
             }
+
+            /* Adjust ring grid for smaller screens */
+            #task-container {
+                grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+                gap: 10px;
+            }
         }
     </style>
 </head>
@@ -345,12 +353,13 @@
 
             // Start Button Event Listener
             startButton.addEventListener('click', function () {
+                console.log('Start Button Clicked');
                 startButton.style.display = 'none';
-                taskContainer.style.display = 'grid'; // Ensure grid layout
+                taskContainer.style.display = 'grid'; // Show task container with grid layout
                 startCamera()
                     .then(() => {
                         calibrationMessage.textContent = 'Camera started. Preparing to start the task...';
-                        setTimeout(startNextTrial, 2000); // Start with the first visual search trial
+                        setTimeout(startNextTrial, 2000); // Start with the first visual search trial after 2 seconds
                     })
                     .catch(error => {
                         console.error('Error starting camera:', error);
@@ -426,6 +435,7 @@
 
             // Handle Ring Click
             function onRingClick(isTarget, trialIndex, ringElement) {
+                console.log(`Ring clicked: Target=${isTarget}`);
                 if (isTarget) {
                     clearTimeout(timer);
                     const reactionTime = Date.now() - trialStartTime;
