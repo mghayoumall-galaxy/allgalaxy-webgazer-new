@@ -265,6 +265,11 @@
                 displayDrawingResults(experimentData);
                 displayTaskResults(experimentData);
             } else {
+                displayNoData();
+            }
+
+            // Function to handle no data scenario
+            function displayNoData() {
                 drawingPrediction.textContent = 'No data available.';
                 drawingAdvice.textContent = 'Please complete the experiment first.';
                 correctCountEl.textContent = 'N/A';
@@ -388,7 +393,7 @@
             function displayTaskResults(experimentData) {
                 const trials = experimentData.trials || [];
 
-                // Calculate correct and wrong counts
+                // Retrieve correct and wrong counts
                 const correctCount = experimentData.correctCount || 0;
                 const wrongCount = experimentData.wrongCount || 0;
 
