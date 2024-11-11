@@ -84,8 +84,9 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            flex-wrap: wrap;
+            flex-direction: column;
             gap: 10px;
+            width: 100%;
         }
 
         /* Calibration Message */
@@ -137,37 +138,20 @@
             color: #555;
         }
 
-        /* Drawing Upload Section */
-        #drawing-section {
-            margin: 20px 0;
+        /* Drawing Sections */
+        .drawing-section {
             display: none;
             flex-direction: column;
             align-items: center;
+            width: 100%;
         }
 
-        #drawingUpload {
-            margin-top: 10px;
-        }
-
-        #uploadButton {
-            padding: 8px 16px;
-            font-size: 1em;
-            background-color: #17a2b8;
-            color: #ffffff;
-            border: none;
+        canvas {
+            border: 2px solid #007BFF;
             border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
+            background-color: #f9f9f9;
+            cursor: crosshair;
             margin-top: 10px;
-        }
-
-        #uploadButton:hover {
-            background-color: #138496;
-        }
-
-        #uploadStatus {
-            margin-top: 10px;
-            font-size: 1em;
         }
 
         /* Privacy Notice */
@@ -201,6 +185,11 @@
 
             #progress-container {
                 height: 15px;
+            }
+
+            canvas {
+                width: 90%;
+                height: auto;
             }
         }
 
@@ -241,26 +230,32 @@
         </div>
 
         <!-- Start Button -->
-        <button id="startButton">Start First Assessment Task</button>
+        <button id="startButton">Start Assessment</button>
 
         <!-- Trial Information -->
         <div id="trialInfo"></div>
 
         <!-- Task Container -->
         <div id="task-container">
-            <!-- The image to memorize will appear here -->
+            <!-- Content will be dynamically injected here -->
         </div>
 
         <!-- Calibration Message -->
-        <div id="calibrationMessage">Press "Start Task" to begin.</div>
+        <div id="calibrationMessage">Press "Start Assessment" to begin.</div>
 
-        <!-- Drawing Upload Section -->
-        <div id="drawing-section">
-            <h2>Drawing Task</h2>
-            <p>Please draw the image you memorized and a clock showing 10:10 on a piece of paper.</p>
-            <input type="file" id="drawingUpload" accept="image/*">
-            <button id="uploadButton">Upload Drawing</button>
-            <div id="uploadStatus"></div>
+        <!-- Drawing Sections -->
+        <div id="drawingSection1" class="drawing-section">
+            <h2>Drawing Task 1</h2>
+            <p>Please draw the image you memorized.</p>
+            <canvas id="drawingCanvas1" width="500" height="400"></canvas>
+            <div id="drawingStatus1"></div>
+        </div>
+
+        <div id="drawingSection2" class="drawing-section">
+            <h2>Drawing Task 2</h2>
+            <p>Please draw a clock showing 10:10.</p>
+            <canvas id="drawingCanvas2" width="500" height="400"></canvas>
+            <div id="drawingStatus2"></div>
         </div>
     </div>
 
@@ -277,18 +272,25 @@
             const startButton = document.getElementById('startButton');
             const trialInfo = document.getElementById('trialInfo');
             const webcamVideo = document.getElementById('webcamVideo');
-            const drawingSection = document.getElementById('drawing-section');
-            const drawingUpload = document.getElementById('drawingUpload');
-            const uploadButton = document.getElementById('uploadButton');
-            const uploadStatus = document.getElementById('uploadStatus');
             const progressBar = document.getElementById('progress-bar');
+
+            const drawingSection1 = document.getElementById('drawingSection1');
+            const drawingCanvas1 = document.getElementById('drawingCanvas1');
+            const drawingStatus1 = document.getElementById('drawingStatus1');
+
+            const drawingSection2 = document.getElementById('drawingSection2');
+            const drawingCanvas2 = document.getElementById('drawingCanvas2');
+            const drawingStatus2 = document.getElementById('drawingStatus2');
 
             // Configuration
             let trialPointer = 0; // Pointer to track current trial
+            const totalTrials = 2; // Two drawing tasks
             const memoryImage = 'images/image1.jpg'; // Ensure this image exists in the 'images' folder
 
+            let drawingData1 = null;
+            let drawingData2 = null;
+
             // Initialize Progress
-            const totalTrials = 1; // Only one trial in this task
             updateProgress();
 
             // Start Button Event Listener
@@ -297,7 +299,7 @@
                 startCamera()
                     .then(() => {
                         calibrationMessage.textContent = 'Visual Memory Task: Memorize the image for 10 seconds.';
-                        setTimeout(startVisualMemoryTask, 2000); // Delay before starting memory task
+                        setTimeout(startVisualMemoryTask, 1000); // Short delay before starting memory task
                     })
                     .catch(error => {
                         console.error('Error starting camera:', error);
@@ -334,74 +336,160 @@
 
             // Display Memory Image
             function displayMemoryImage() {
-                // Display the image
+                // Display the memory image
                 taskContainer.innerHTML = `<img src="${memoryImage}" alt="Memory Image" style="max-width: 100%; max-height: 500px;">`;
+
+                // Update Progress
+                trialPointer++;
+                updateProgress();
 
                 // Start timer for 10 seconds
                 setTimeout(() => {
                     taskContainer.innerHTML = '';
-                    calibrationMessage.textContent = 'Please draw the image you memorized and a clock showing 10:10 on a piece of paper.';
-                    showDrawingSection();
-                }, 10000);
+                    calibrationMessage.textContent = 'Please draw the image you memorized.';
+                    startDrawingTask1();
+                }, 10000); // 10 seconds
             }
 
-            // Show Drawing Upload Section
-            function showDrawingSection() {
-                drawingSection.style.display = 'flex';
+            // Initialize Drawing on Canvas
+            function initializeCanvas(canvas, statusDiv, drawingNumber) {
+                const ctx = canvas.getContext('2d');
+                let drawing = false;
+
+                // Set up mouse events for drawing
+                canvas.addEventListener('mousedown', (e) => {
+                    drawing = true;
+                    ctx.beginPath();
+                    ctx.moveTo(e.offsetX, e.offsetY);
+                });
+
+                canvas.addEventListener('mousemove', (e) => {
+                    if (drawing) {
+                        ctx.lineTo(e.offsetX, e.offsetY);
+                        ctx.strokeStyle = '#007BFF';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                });
+
+                canvas.addEventListener('mouseup', () => {
+                    drawing = false;
+                });
+
+                canvas.addEventListener('mouseleave', () => {
+                    drawing = false;
+                });
+
+                // Touch events for mobile devices
+                canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    const touch = e.touches[0];
+                    const rect = canvas.getBoundingClientRect();
+                    const x = touch.clientX - rect.left;
+                    const y = touch.clientY - rect.top;
+                    drawing = true;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                });
+
+                canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    if (drawing) {
+                        const touch = e.touches[0];
+                        const rect = canvas.getBoundingClientRect();
+                        const x = touch.clientX - rect.left;
+                        const y = touch.clientY - rect.top;
+                        ctx.lineTo(x, y);
+                        ctx.strokeStyle = '#007BFF';
+                        ctx.lineWidth = 2;
+                        ctx.stroke();
+                    }
+                });
+
+                canvas.addEventListener('touchend', () => {
+                    drawing = false;
+                });
+
+                // Automatically save drawing after 30 seconds
+                setTimeout(() => {
+                    if (drawingNumber === 1 && !drawingData1) { // If user hasn't finished drawing
+                        saveDrawing(canvas, statusDiv, 1);
+                    } else if (drawingNumber === 2 && !drawingData2) { // If user hasn't finished drawing
+                        saveDrawing(canvas, statusDiv, 2);
+                    }
+                }, 30000); // 30 seconds
             }
 
-            // Handle Drawing Upload
-            uploadButton.addEventListener('click', function () {
-                const files = drawingUpload.files;
-                if (files.length === 0) {
-                    uploadStatus.textContent = 'Please select a drawing to upload.';
-                    uploadStatus.style.color = 'red';
-                    return;
+            // Save Drawing Function
+            function saveDrawing(canvas, statusDiv, drawingNumber) {
+                const dataURL = canvas.toDataURL('image/png');
+                if (drawingNumber === 1) {
+                    drawingData1 = dataURL;
+                    statusDiv.innerHTML = `<p style="color: green;">Drawing 1 saved successfully.</p>`;
+                    drawingSection1.style.display = 'none';
+                    startClockTask();
+                } else if (drawingNumber === 2) {
+                    drawingData2 = dataURL;
+                    statusDiv.innerHTML = `<p style="color: green;">Drawing 2 saved successfully.</p>`;
+                    drawingSection2.style.display = 'none';
+                    endExperiment();
                 }
+            }
 
-                const file = files[0];
-                if (!file.type.startsWith('image/')) {
-                    uploadStatus.textContent = 'Invalid file type. Please upload an image.';
-                    uploadStatus.style.color = 'red';
-                    return;
-                }
+            // Start Drawing Task 1
+            function startDrawingTask1() {
+                drawingSection1.style.display = 'flex';
+                initializeCanvas(drawingCanvas1, drawingStatus1, 1);
+            }
 
-                if (file.size > 5 * 1024 * 1024) { // 5MB limit
-                    uploadStatus.textContent = 'File is too large. Please upload an image smaller than 5MB.';
-                    uploadStatus.style.color = 'red';
-                    return;
-                }
+            // Start Clock Task
+            function startClockTask() {
+                calibrationMessage.textContent = 'Clock Task: Please draw a clock showing 10:10.';
+                startDrawingTask2();
+            }
 
-                const reader = new FileReader();
-                reader.onload = function (e) {
-                    const imgData = e.target.result;
-                    uploadStatus.innerHTML = `<p style="color: green;">Drawing uploaded successfully.</p><img src="${imgData}" alt="Uploaded Drawing" style="max-width: 300px; max-height: 300px;">`;
-
-                    // Proceed to end the experiment after a short delay
-                    setTimeout(() => {
-                        drawingSection.style.display = 'none';
-                        uploadStatus.innerHTML = '';
-                        drawingUpload.value = ''; // Reset file input
-                        endExperiment();
-                    }, 1000);
-                };
-                reader.readAsDataURL(file);
-            });
+            // Start Drawing Task 2
+            function startDrawingTask2() {
+                drawingSection2.style.display = 'flex';
+                initializeCanvas(drawingCanvas2, drawingStatus2, 2);
+            }
 
             // End Experiment
             function endExperiment() {
-                taskContainer.innerHTML = '';
                 calibrationMessage.innerHTML = `Assessment complete. Thank you for your participation.`;
                 trialInfo.textContent = '';
                 stopCamera();
 
                 // Store experiment data
-                // You can implement data saving logic here
+                // You can implement data saving logic here, e.g., send to server via fetch
+                // Example:
+                /*
+                const data = {
+                    drawing1: drawingData1,
+                    drawing2: drawingData2,
+                    // Add more data if needed
+                };
+
+                fetch('your-server-endpoint', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log('Success:', result);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+                */
 
                 // Redirect to gaze4.html after a short delay
                 setTimeout(() => {
                     window.location.href = 'gaze4.html';
-                }, 2000); // Redirect after 2 seconds
+                }, 3000); // Redirect after 3 seconds
             }
 
             // Initialize WebGazer for Eye Tracking (Retained as per original code)
