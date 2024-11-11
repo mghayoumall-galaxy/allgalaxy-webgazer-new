@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Eye Movement Data Collection & Cognitive Assessment</title>
+    <title>Cognitive Assessment</title>
     <!-- WebGazer for Eye Tracking -->
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <style>
@@ -14,7 +14,7 @@
             box-sizing: border-box;
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
+            background-color: #ffffff; /* Changed to white */
             color: #333;
             display: flex;
             flex-direction: column;
@@ -29,6 +29,7 @@
             text-align: center;
             padding: 20px;
             margin-top: 20px;
+            background-color: #ffffff; /* Ensuring container has white background */
         }
 
         /* Header Styling */
@@ -98,7 +99,7 @@
         /* Footer Styling */
         footer {
             width: 100%;
-            background: #ffffff;
+            background: #ffffff; /* Changed to white */
             color: #777;
             padding: 15px;
             border-radius: 20px 20px 0 0;
@@ -107,6 +108,9 @@
             box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
             position: fixed;
             bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         /* Start Button */
@@ -199,13 +203,26 @@
                 height: 15px;
             }
         }
+
+        /* Footer Logo Styling */
+        .footer-logo {
+            margin-top: 5px; /* Reduced margin */
+            max-width: 40px; /* Reduced size */
+        }
+
+        @media (max-width: 768px) {
+            .footer-logo {
+                max-width: 30px; /* Further reduced size on mobile */
+                margin-top: 4px;
+            }
+        }
     </style>
 </head>
 
 <body>
     <div class="container">
         <header>
-            <h1>Data Collection & Cognitive Assessment</h1>
+            <h1>Alzheimer’s Assessment Instructions</h1>
         </header>
 
         <!-- Privacy Notice -->
@@ -224,7 +241,7 @@
         </div>
 
         <!-- Start Button -->
-        <button id="startButton">Start First Assestment Task</button>
+        <button id="startButton">Start First Assessment Task</button>
 
         <!-- Trial Information -->
         <div id="trialInfo"></div>
@@ -248,7 +265,8 @@
     </div>
 
     <footer>
-        <p>&copy; 2024 Eye Movement Research</p>
+        <img src="images/logo.png" alt="Alzheimer’s Assessment Logo" class="footer-logo">
+        <p>&copy; 2024 Alzheimer's Assessment Tool. All rights reserved.</p>
     </footer>
 
     <script>
@@ -373,20 +391,20 @@
             // End Experiment
             function endExperiment() {
                 taskContainer.innerHTML = '';
-                calibrationMessage.innerHTML = `Data collection complete. Thank you for your participation.`;
+                calibrationMessage.innerHTML = `Assessment complete. Thank you for your participation.`;
                 trialInfo.textContent = '';
                 stopCamera();
 
                 // Store experiment data
                 // You can implement data saving logic here
 
-                // Redirect to gaze4.html after a short delay
+                // Redirect to gaze3.html after a short delay
                 setTimeout(() => {
-                    window.location.href = 'gaze4.html';
+                    window.location.href = 'gaze3.html';
                 }, 2000); // Redirect after 2 seconds
             }
 
-            // Initialize WebGazer for Eye Tracking
+            // Initialize WebGazer for Eye Tracking (Retained as per original code)
             webgazer.setGazeListener(function (data, elapsedTime) {
                 if (data == null) {
                     return;
