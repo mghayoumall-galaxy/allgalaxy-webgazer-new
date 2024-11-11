@@ -38,7 +38,7 @@
 
         /* Header Styling */
         header {
-            margin-bottom: 20px;
+            margin-bottom: 15px; /* Reduced margin */
         }
 
         header h1 {
@@ -52,12 +52,13 @@
         main {
             flex-grow: 1;
             overflow-y: auto; /* Allow internal scrolling if needed */
+            padding-bottom: 10px; /* Space between content and footer */
         }
 
         main p {
             font-size: 1em;
             line-height: 1.6;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             color: #333333;
             text-align: left;
         }
@@ -65,13 +66,13 @@
         main ul {
             text-align: left;
             margin-left: 20px;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             padding-left: 0;
             list-style-type: disc;
         }
 
         main ul li {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
 
         /* Button Styling */
@@ -89,6 +90,7 @@
             width: 100%;
             max-width: 300px;
             align-self: center;
+            margin-top: 10px; /* Reduced margin */
         }
 
         #proceedButton:hover {
@@ -99,7 +101,7 @@
 
         /* Footer Styling */
         footer {
-            margin-top: 20px;
+            margin-top: 15px; /* Reduced margin */
             color: #777777;
             font-size: 0.9em;
             display: flex;
@@ -152,7 +154,7 @@
             <h1>Alzheimer’s Assessment Instructions</h1>
         </header>
         <main>
-            <p>Welcome to the Alzheimer's Assessment. This assessment is designed to help identify early signs of cognitive decline.</p>
+            <p>Welcome to the Alzheimer's Assessment. This assessment is designed to help identify signs of cognitive decline.</p>
             <p>Here’s what you need to know before starting:</p>
             <ul>
                 <li><strong>Duration:</strong> The entire process will take approximately 10-15 minutes.</li>
@@ -165,8 +167,8 @@
             <button id="proceedButton">Proceed to Assessment</button>
         </main>
         <footer>
-            <p>&copy; 2024 Alzheimer's Assessment Tool. All rights reserved.</p>
             <img src="images/logo.png" alt="Alzheimer’s Assessment Logo" class="footer-logo">
+            <p>&copy; 2024 Alzheimer's Assessment Tool. All rights reserved.</p>
         </footer>
     </div>
 
@@ -174,7 +176,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const proceedButton = document.getElementById('proceedButton');
             proceedButton.addEventListener('click', function () {
-                window.location.href = 'assessment.html'; // Ensure this points to the correct assessment page
+                window.location.href = 'gaze3.html'; // Redirect to gaze3.html
             });
         });
     </script>
