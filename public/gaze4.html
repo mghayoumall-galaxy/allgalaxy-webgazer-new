@@ -93,9 +93,10 @@
             border-radius: 10px;
             cursor: crosshair;
             background-color: #fff;
+            width: 400px;
+            height: 400px;
         }
 
-        /* Controls */
         .controls {
             margin-top: 20px;
             display: flex;
@@ -323,13 +324,13 @@
         </div>
 
         <!-- Start Button -->
-        <button id="startButton">Start Second Assessment Task</button>
+        <button id="startButton" style="display: none;">Start Second Assessment Task</button>
 
         <!-- Trial Information -->
         <div id="trialInfo"></div>
 
         <!-- Task Container -->
-        <div id="task-container">
+        <div id="task-container" style="display: none;">
             <!-- Dynamically generated visual search task will appear here -->
         </div>
 
@@ -451,7 +452,7 @@
 
             submitDrawingBtn.addEventListener('click', () => {
                 const drawingData = drawingCanvas.toDataURL('image/png');
-                const experimentData = JSON.parse(localStorage.getItem('experimentData')) || {};
+                let experimentData = JSON.parse(localStorage.getItem('experimentData')) || {};
                 experimentData.drawingData = drawingData;
                 localStorage.setItem('experimentData', JSON.stringify(experimentData));
 
@@ -460,11 +461,13 @@
                 submitDrawingBtn.style.display = 'none';
                 clearBtn.style.display = 'none';
                 startButton.style.display = 'block';
+                taskContainer.style.display = 'none';
             });
 
             // Start Button Event Listener
             startButton.addEventListener('click', function () {
                 startButton.style.display = 'none';
+                taskContainer.style.display = 'flex';
                 startCamera()
                     .then(() => {
                         calibrationMessage.textContent = 'Camera started. Preparing to start the task...';
@@ -607,7 +610,7 @@
 
             // End Experiment
             function endExperiment() {
-                taskContainer.innerHTML = '';
+                taskContainer.style.display = 'none';
                 calibrationMessage.innerHTML = `
                     <p>Correct Answers: ${correctCount}</p>
                     <p>Wrong Answers: ${wrongCount}</p>
@@ -616,16 +619,22 @@
                 trialInfo.textContent = '';
                 stopCamera();
 
-                // Store comprehensive experiment data
-                const experimentData = {
-                    drawingData: localStorage.getItem('experimentData') ? JSON.parse(localStorage.getItem('experimentData')).drawingData : null,
-                    trials: trials,
-                    allGazeData: allGazeData,
-                    targetPositions: targetPositions,
-                    correctCount: correctCount,
-                    wrongCount: wrongCount
-                };
+                // Retrieve existing experimentData
+                let experimentData = JSON.parse(localStorage.getItem('experimentData')) || {};
+
+                // Add or update experimentData with visual search results
+                experimentData.trials = trials;
+                experimentData.allGazeData = allGazeData;
+                experimentData.targetPositions = targetPositions;
+                experimentData.correctCount = correctCount;
+                experimentData.wrongCount = wrongCount;
+
+                // Store updated experimentData back to localStorage
                 localStorage.setItem('experimentData', JSON.stringify(experimentData));
+
+                // Show results section briefly
+                resultsSection.style.display = 'block';
+                resultsMessage.textContent = 'Processing your data...';
 
                 // Redirect to gaze5.html after a short delay
                 setTimeout(() => {
@@ -669,7 +678,8 @@
 
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
-                // Implement data saving logic here, such as sending data to a server
+                // Optionally, clear localStorage after displaying results
+                // localStorage.removeItem('experimentData');
                 webgazer.end();
             });
 
