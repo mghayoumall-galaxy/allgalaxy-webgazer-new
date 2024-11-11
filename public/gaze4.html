@@ -3,7 +3,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Alzheimer’s Assessment Tool</title>
+    <title>Alzheimer’s Assessment Tool - Task 2</title>
     <!-- WebGazer for Eye Tracking -->
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <style>
@@ -76,47 +76,6 @@
             height: 100%;
             background-color: #007BFF;
             transition: width 0.3s;
-        }
-
-        /* Drawing Section */
-        #drawing-section {
-            width: 100%;
-            max-width: 800px;
-            margin: 20px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #drawingCanvas {
-            border: 2px solid #007BFF;
-            border-radius: 10px;
-            cursor: crosshair;
-            background-color: #fff;
-            width: 400px;
-            height: 400px;
-        }
-
-        .controls {
-            margin-top: 20px;
-            display: flex;
-            gap: 10px;
-        }
-
-        .btn {
-            padding: 10px 20px;
-            font-size: 1em;
-            color: #fff;
-            background-color: #28a745;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            text-decoration: none;
-        }
-
-        .btn:hover {
-            background-color: #218838;
         }
 
         /* Central Camera Frame */
@@ -285,11 +244,6 @@
                 max-width: 30px; /* Reduced size on mobile */
                 margin-top: 4px;
             }
-
-            #drawingCanvas {
-                width: 300px;
-                height: 300px;
-            }
         }
     </style>
 </head>
@@ -297,7 +251,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Alzheimer’s Assessment Instructions</h1>
+            <h1>Alzheimer’s Assessment - Visual Search Task</h1>
         </header>
 
         <!-- Privacy Notice -->
@@ -310,23 +264,13 @@
             <div id="progress-bar"></div>
         </div>
 
-        <!-- Drawing Section -->
-        <div id="drawing-section">
-            <h2>Task 1: Drawing Task</h2>
-            <canvas id="drawingCanvas" width="400" height="400"></canvas>
-            <div class="controls">
-                <button class="btn" id="clearBtn">Clear</button>
-                <button class="btn" id="submitDrawingBtn">Submit Drawing</button>
-            </div>
-        </div>
-
         <!-- Central Camera Frame -->
         <div id="camera-frame">
             <video id="webcamVideo" autoplay playsinline></video>
         </div>
 
         <!-- Start Button -->
-        <button id="startButton">Start Second Assessment Task</button>
+        <button id="startButton">Start Visual Search Task</button>
 
         <!-- Trial Information -->
         <div id="trialInfo"></div>
@@ -337,7 +281,7 @@
         </div>
 
         <!-- Calibration Message -->
-        <div id="calibrationMessage">Press "Start Task" to begin.</div>
+        <div id="calibrationMessage">Press "Start Visual Search Task" to begin.</div>
 
         <!-- Results Section -->
         <div id="results-section">
@@ -354,13 +298,9 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // DOM Elements
-            const drawingCanvas = document.getElementById('drawingCanvas');
-            const ctx = drawingCanvas.getContext('2d');
-            const clearBtn = document.getElementById('clearBtn');
-            const submitDrawingBtn = document.getElementById('submitDrawingBtn');
+            const startButton = document.getElementById('startButton');
             const taskContainer = document.getElementById('task-container');
             const calibrationMessage = document.getElementById('calibrationMessage');
-            const startButton = document.getElementById('startButton');
             const trialInfo = document.getElementById('trialInfo');
             const webcamVideo = document.getElementById('webcamVideo');
             const resultsSection = document.getElementById('results-section');
@@ -380,10 +320,9 @@
             // Configuration based on the research paper
             const taskTypes = ['serial', 'popout'];
             const numberOfRingsOptions = [4, 48];
-            const trialsPerCombination = 2; // Adjust to have a total of 8 search trials
+            const trialsPerCombination = 2; // Total of 8 search trials
 
             // Initialize trials
-            // Add search trials
             for (let task of taskTypes) {
                 for (let numRings of numberOfRingsOptions) {
                     for (let i = 0; i < trialsPerCombination; i++) {
@@ -409,62 +348,6 @@
             // Initialize Progress
             const totalTrials = trials.length;
             updateProgress();
-
-            // Drawing Task Event Listeners
-            let drawing = false;
-            let x = 0;
-            let y = 0;
-
-            drawingCanvas.addEventListener('mousedown', e => {
-                x = e.offsetX;
-                y = e.offsetY;
-                drawing = true;
-            });
-
-            drawingCanvas.addEventListener('mousemove', e => {
-                if (drawing === true) {
-                    drawLine(ctx, x, y, e.offsetX, e.offsetY);
-                    x = e.offsetX;
-                    y = e.offsetY;
-                }
-            });
-
-            window.addEventListener('mouseup', e => {
-                if (drawing === true) {
-                    drawLine(ctx, x, y, e.offsetX, e.offsetY);
-                    x = 0;
-                    y = 0;
-                    drawing = false;
-                }
-            });
-
-            function drawLine(context, x1, y1, x2, y2) {
-                context.beginPath();
-                context.strokeStyle = '#007BFF';
-                context.lineWidth = 2;
-                context.moveTo(x1, y1);
-                context.lineTo(x2, y2);
-                context.stroke();
-                context.closePath();
-            }
-
-            clearBtn.addEventListener('click', () => {
-                ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
-            });
-
-            submitDrawingBtn.addEventListener('click', () => {
-                const drawingData = drawingCanvas.toDataURL('image/png');
-                let experimentData = JSON.parse(localStorage.getItem('experimentData')) || {};
-                experimentData.drawingData = drawingData;
-                localStorage.setItem('experimentData', JSON.stringify(experimentData));
-
-                // Proceed to visual search task
-                drawingCanvas.style.display = 'none';
-                submitDrawingBtn.style.display = 'none';
-                clearBtn.style.display = 'none';
-                startButton.style.display = 'block';
-                taskContainer.style.display = 'none';
-            });
 
             // Start Button Event Listener
             startButton.addEventListener('click', function () {
