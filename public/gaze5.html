@@ -10,31 +10,33 @@
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Basic Reset */
-        body, html {
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            height: 100%;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #ffffff; /* White background */
-            color: #333;
+        }
+
+        /* Body Styling with Flex Layout */
+        body {
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #ffffff; /* White background */
+            color: #333;
         }
 
-        /* Container */
+        /* Container for Main Content */
         .container {
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            padding-bottom: 140px; /* Space for fixed footer */
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
-            overflow: auto; /* Allow scrolling if content overflows */
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow: hidden; /* Prevents content from spilling over */
         }
 
         /* Header Styling */
@@ -44,6 +46,7 @@
             color: #007BFF;
             border-bottom: 3px solid #61dafb;
             padding-bottom: 10px;
+            text-align: center;
         }
 
         /* Privacy Notice */
@@ -138,12 +141,12 @@
             font-size: 0.9em;
             text-align: center;
             box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
-            position: fixed;
-            bottom: 0;
-            left: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: fixed;
+            bottom: 0;
+            left: 0;
         }
 
         /* Footer Logo Styling */
@@ -183,6 +186,12 @@
                 max-width: 200px;
                 max-height: 200px;
             }
+        }
+
+        /* Remove blank space on the right */
+        html, body {
+            width: 100%;
+            overflow-x: hidden;
         }
     </style>
 </head>
