@@ -22,16 +22,16 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #ffffff; /* White background */
             color: #333;
+            overflow: hidden; /* Prevent scrolling */
         }
 
         /* Container for Main Content */
         .container {
             flex: 1;
-            width: 90%;
+            width: 100%;
             max-width: 1200px;
             text-align: center;
             padding: 20px;
-            margin: 20px auto;
             background-color: #ffffff; /* White background */
             display: flex;
             flex-direction: column;
@@ -102,7 +102,7 @@
         #task-container {
             margin: 20px 0;
             display: none; /* Hidden initially */
-            display: grid;
+            display: grid; /* Set to grid when displayed */
             grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
             gap: 15px;
             width: 100%;
@@ -596,6 +596,7 @@
                 const progressPercentage = ((trialPointer) / totalTrials) * 100;
                 progressBar.style.width = `${progressPercentage}%`;
             }
-        </script>
-    </body>
+        });
+    </script>
+</body>
 </html>
