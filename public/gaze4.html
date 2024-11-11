@@ -30,7 +30,7 @@
             text-align: center;
             padding: 20px;
             background-color: #ffffff; /* White background */
-            padding-bottom: 100px; /* Space for fixed footer */
+            padding-bottom: 120px; /* Space for fixed footer */
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -76,6 +76,46 @@
             height: 100%;
             background-color: #007BFF;
             transition: width 0.3s;
+        }
+
+        /* Drawing Section */
+        #drawing-section {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #drawingCanvas {
+            border: 2px solid #007BFF;
+            border-radius: 10px;
+            cursor: crosshair;
+            background-color: #fff;
+        }
+
+        /* Controls */
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #218838;
         }
 
         /* Central Camera Frame */
@@ -242,6 +282,11 @@
                 max-width: 30px; /* Reduced size on mobile */
                 margin-top: 4px;
             }
+
+            #drawingCanvas {
+                width: 300px;
+                height: 300px;
+            }
         }
     </style>
 </head>
@@ -260,6 +305,16 @@
         <!-- Progress Bar -->
         <div id="progress-container">
             <div id="progress-bar"></div>
+        </div>
+
+        <!-- Drawing Section -->
+        <div id="drawing-section">
+            <h2>Task 1: Drawing Task</h2>
+            <canvas id="drawingCanvas" width="400" height="400"></canvas>
+            <div class="controls">
+                <button class="btn" id="clearBtn">Clear</button>
+                <button class="btn" id="submitDrawingBtn">Submit Drawing</button>
+            </div>
         </div>
 
         <!-- Central Camera Frame -->
@@ -296,6 +351,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // DOM Elements
+            const drawingCanvas = document.getElementById('drawingCanvas');
+            const ctx = drawingCanvas.getContext('2d');
+            const clearBtn = document.getElementById('clearBtn');
+            const submitDrawingBtn = document.getElementById('submitDrawingBtn');
             const taskContainer = document.getElementById('task-container');
             const calibrationMessage = document.getElementById('calibrationMessage');
             const startButton = document.getElementById('startButton');
@@ -347,6 +406,61 @@
             // Initialize Progress
             const totalTrials = trials.length;
             updateProgress();
+
+            // Drawing Task Event Listeners
+            let drawing = false;
+            let x = 0;
+            let y = 0;
+
+            drawingCanvas.addEventListener('mousedown', e => {
+                x = e.offsetX;
+                y = e.offsetY;
+                drawing = true;
+            });
+
+            drawingCanvas.addEventListener('mousemove', e => {
+                if (drawing === true) {
+                    drawLine(ctx, x, y, e.offsetX, e.offsetY);
+                    x = e.offsetX;
+                    y = e.offsetY;
+                }
+            });
+
+            window.addEventListener('mouseup', e => {
+                if (drawing === true) {
+                    drawLine(ctx, x, y, e.offsetX, e.offsetY);
+                    x = 0;
+                    y = 0;
+                    drawing = false;
+                }
+            });
+
+            function drawLine(context, x1, y1, x2, y2) {
+                context.beginPath();
+                context.strokeStyle = '#007BFF';
+                context.lineWidth = 2;
+                context.moveTo(x1, y1);
+                context.lineTo(x2, y2);
+                context.stroke();
+                context.closePath();
+            }
+
+            clearBtn.addEventListener('click', () => {
+                ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            });
+
+            submitDrawingBtn.addEventListener('click', () => {
+                const drawingData = drawingCanvas.toDataURL('image/png');
+                const experimentData = JSON.parse(localStorage.getItem('experimentData')) || {};
+                experimentData.drawingData = drawingData;
+                localStorage.setItem('experimentData', JSON.stringify(experimentData));
+
+                // Proceed to visual search task
+                drawingCanvas.style.display = 'none';
+                submitDrawingBtn.style.display = 'none';
+                clearBtn.style.display = 'none';
+                startButton.style.display = 'block';
+            });
 
             // Start Button Event Listener
             startButton.addEventListener('click', function () {
@@ -504,6 +618,7 @@
 
                 // Store comprehensive experiment data
                 const experimentData = {
+                    drawingData: localStorage.getItem('experimentData') ? JSON.parse(localStorage.getItem('experimentData')).drawingData : null,
                     trials: trials,
                     allGazeData: allGazeData,
                     targetPositions: targetPositions,

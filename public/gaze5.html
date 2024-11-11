@@ -30,10 +30,11 @@
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            padding-bottom: 120px; /* Space for fixed footer */
+            padding-bottom: 140px; /* Space for fixed footer */
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
+            overflow: hidden; /* Prevent scrolling */
         }
 
         /* Header Styling */
@@ -118,6 +119,15 @@
             margin: 20px 0;
         }
 
+        /* Drawing Image Styling */
+        #drawingImage {
+            max-width: 300px;
+            max-height: 300px;
+            border: 2px solid #007BFF;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
         /* Fixed Footer */
         footer {
             width: 100%;
@@ -164,10 +174,18 @@
                 padding: 10px 20px;
                 font-size: 0.9em;
             }
+
+            .chart-container {
+                max-width: 100%;
+            }
+
+            #drawingImage {
+                max-width: 200px;
+                max-height: 200px;
+            }
         }
     </style>
 </head>
-
 <body>
     <div class="container">
         <header>
@@ -181,11 +199,12 @@
 
         <!-- First Report: Drawing Analysis -->
         <div class="result-section" id="drawing-report">
-            <h2>Drawing Analysis</h2>
+            <h2>Task 1: Drawing Analysis</h2>
+            <img id="drawingImage" src="" alt="User Drawing">
             <div class="result">
-                Result: <span id="drawingPrediction">Loading...</span>
+                Prediction: <span id="drawingPrediction">Loading...</span>
             </div>
-            <div class="advice" id="drawingAdvice">Please wait while we process your drawing...</div>
+            <div class="advice" id="drawingAdvice">Analyzing your drawing...</div>
             <div class="chart-container">
                 <canvas id="drawingChart" width="400" height="200" style="max-width: 100%;"></canvas>
             </div>
@@ -193,7 +212,7 @@
 
         <!-- Second Report: Task Performance -->
         <div class="result-section" id="task-report">
-            <h2>Task Performance Analysis</h2>
+            <h2>Task 2: Performance Analysis</h2>
             <div class="result">
                 Correct Answers: <span id="correctCount">0</span>
             </div>
@@ -223,6 +242,7 @@
             const drawingPrediction = document.getElementById('drawingPrediction');
             const drawingAdvice = document.getElementById('drawingAdvice');
             const drawingChartCtx = document.getElementById('drawingChart').getContext('2d');
+            const drawingImage = document.getElementById('drawingImage');
 
             const correctCountEl = document.getElementById('correctCount');
             const wrongCountEl = document.getElementById('wrongCount');
@@ -261,62 +281,78 @@
                     return;
                 }
 
+                // Display the drawing image
+                drawingImage.src = experimentData.drawingData;
+
                 try {
-                    // Load the trained model
+                    // Draft Analysis for Drawing Task
+                    // Placeholder for future integration with TensorFlow.js model
+                    // For now, provide basic analysis based on drawing properties
+
+                    const img = new Image();
+                    img.src = experimentData.drawingData;
+                    img.onload = function () {
+                        // Basic draft analysis: image dimensions
+                        const width = img.width;
+                        const height = img.height;
+                        drawingAdvice.textContent = `Your drawing has dimensions ${width}x${height} pixels.`;
+
+                        // Placeholder for model prediction
+                        drawingPrediction.textContent = 'Analysis pending...';
+                    };
+
+                    // Future Integration: Load the trained TensorFlow.js model and make predictions
+                    /*
                     const model = await tf.loadLayersModel('model/model.json'); // Ensure the path is correct
 
                     // Preprocess the drawing image
-                    const img = new Image();
-                    img.src = experimentData.drawingData; // Assuming drawingData is a base64 image string
-                    img.onload = async function () {
-                        const tensor = tf.browser.fromPixels(img)
-                            .resizeNearestNeighbor([224, 224]) // Adjust based on your model's input size
-                            .toFloat()
-                            .expandDims();
-                        const normalized = tensor.div(255.0); // Normalize as per training
+                    const tensor = tf.browser.fromPixels(img)
+                        .resizeNearestNeighbor([224, 224]) // Adjust based on your model's input size
+                        .toFloat()
+                        .expandDims();
+                    const normalized = tensor.div(255.0); // Normalize as per training
 
-                        // Make prediction
-                        const prediction = model.predict(normalized);
-                        const predictedClass = prediction.argMax(1).dataSync()[0]; // Assuming classification
+                    // Make prediction
+                    const prediction = model.predict(normalized);
+                    const predictedClass = prediction.argMax(1).dataSync()[0]; // Assuming classification
 
-                        // Map prediction to meaningful text
-                        const predictionText = mapPredictionToText(predictedClass);
-                        drawingPrediction.textContent = predictionText;
+                    // Map prediction to meaningful text
+                    const predictionText = mapPredictionToText(predictedClass);
+                    drawingPrediction.textContent = predictionText;
 
-                        // Provide advice based on prediction
-                        const adviceText = getAdviceBasedOnPrediction(predictedClass);
-                        drawingAdvice.textContent = adviceText;
+                    // Provide advice based on prediction
+                    const adviceText = getAdviceBasedOnPrediction(predictedClass);
+                    drawingAdvice.textContent = adviceText;
 
-                        // Display a pie chart showing confidence scores (optional)
-                        // Uncomment and customize based on your model's output
-                        /*
-                        const confidenceScores = prediction.dataSync();
-                        new Chart(drawingChartCtx, {
-                            type: 'pie',
-                            data: {
-                                labels: ['No Alzheimer\'s', 'Mild Cognitive Impairment', 'Alzheimer\'s Disease'],
-                                datasets: [{
-                                    data: confidenceScores,
-                                    backgroundColor: [
-                                        '#28a745',
-                                        '#ffc107',
-                                        '#dc3545'
-                                    ],
-                                }]
-                            },
-                            options: {
-                                responsive: true,
-                                plugins: {
-                                    title: {
-                                        display: true,
-                                        text: 'Drawing Analysis Confidence Scores'
-                                    }
+                    // Display a pie chart showing confidence scores (optional)
+                    const confidenceScores = prediction.dataSync();
+                    new Chart(drawingChartCtx, {
+                        type: 'pie',
+                        data: {
+                            labels: ['No Alzheimer\'s', 'Mild Cognitive Impairment', 'Alzheimer\'s Disease'],
+                            datasets: [{
+                                data: confidenceScores,
+                                backgroundColor: [
+                                    '#28a745',
+                                    '#ffc107',
+                                    '#dc3545'
+                                ],
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            plugins: {
+                                title: {
+                                    display: true,
+                                    text: 'Drawing Analysis Confidence Scores'
+                                },
+                                legend: {
+                                    position: 'bottom',
                                 }
-                            },
-                        });
-                        */
-                    };
-
+                            }
+                        },
+                    });
+                    */
                 } catch (error) {
                     console.error('Error processing drawing:', error);
                     drawingPrediction.textContent = 'An error occurred during analysis.';
@@ -324,18 +360,17 @@
                 }
             }
 
-            // Map Prediction to Meaningful Text
+            // Placeholder for mapping prediction to text
             function mapPredictionToText(prediction) {
                 const predictionMap = {
                     0: 'No Alzheimer\'s Detected',
                     1: 'Mild Cognitive Impairment',
                     2: 'Alzheimer\'s Disease Detected'
-                    // Adjust based on your model's output classes
                 };
                 return predictionMap[prediction] || 'Unknown';
             }
 
-            // Provide Advice Based on Prediction
+            // Placeholder for providing advice based on prediction
             function getAdviceBasedOnPrediction(prediction) {
                 switch (prediction) {
                     case 0:
@@ -354,8 +389,8 @@
                 const trials = experimentData.trials || [];
 
                 // Calculate correct and wrong counts
-                const correctCount = trials.filter(trial => trial.reactionTime !== null && trial.gazeData.length > 0).length;
-                const wrongCount = trials.length - correctCount;
+                const correctCount = experimentData.correctCount || 0;
+                const wrongCount = experimentData.wrongCount || 0;
 
                 correctCountEl.textContent = correctCount;
                 wrongCountEl.textContent = wrongCount;
@@ -369,8 +404,8 @@
                     : 0;
                 averageReactionTimeEl.textContent = averageReactionTime;
 
-                // Provide advice based on performance
-                const taskAdviceText = getTaskAdvice(correctCount, wrongCount, averageReactionTime);
+                // Provide analysis based on performance
+                const taskAdviceText = getTaskAdvice(correctCount, wrongCount, averageReactionTime, trials.length);
                 taskAdvice.textContent = taskAdviceText;
 
                 // Display a Doughnut Chart for Correct vs Incorrect Answers
@@ -402,17 +437,14 @@
             }
 
             // Provide Advice Based on Task Performance
-            function getTaskAdvice(correct, wrong, avgRT) {
+            function getTaskAdvice(correct, wrong, avgRT, totalTrials) {
                 // Define thresholds based on your study's criteria
                 const reactionTimeThreshold = 3000; // in ms
-                const correctnessThreshold = 0.6; // 60% correct
+                const correctnessRate = totalTrials > 0 ? correct / totalTrials : 0;
 
-                const total = correct + wrong;
-                const correctnessRate = total > 0 ? correct / total : 0;
-
-                if (correctnessRate >= correctnessThreshold && avgRT < reactionTimeThreshold) {
+                if (correctnessRate >= 0.75 && avgRT < reactionTimeThreshold) {
                     return 'Excellent performance! Your task metrics indicate healthy cognitive function.';
-                } else if (correctnessRate >= correctnessThreshold && avgRT < (reactionTimeThreshold * 1.5)) {
+                } else if (correctnessRate >= 0.6 && avgRT < (reactionTimeThreshold * 1.5)) {
                     return 'Good performance. However, consider monitoring your cognitive health regularly.';
                 } else {
                     return 'Your task performance shows potential signs of cognitive impairment. It is recommended to consult a healthcare professional.';
@@ -421,11 +453,9 @@
 
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
-                // Implement data saving logic here, such as sending data to a server
-                // For example, you can clear the localStorage if desired
+                // Optionally, clear localStorage after displaying results
                 // localStorage.removeItem('experimentData');
             });
-        });
-    </script>
-</body>
+        </script>
+    </body>
 </html>
