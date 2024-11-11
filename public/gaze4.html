@@ -1,3 +1,4 @@
+<!-- gaze4.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,29 +8,34 @@
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <style>
         /* Basic Reset */
-        body,
-        html {
+        body, html {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #ffffff; /* Changed to white */
+            background-color: #ffffff; /* White background */
             color: #333;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
+            overflow: hidden; /* Prevent scrolling */
         }
 
         /* Container */
         .container {
-            width: 90%;
+            width: 100%;
             max-width: 1200px;
             text-align: center;
             padding: 20px;
-            margin-top: 20px;
-            background-color: #ffffff; /* Ensuring container has white background */
+            background-color: #ffffff; /* White background */
+            padding-bottom: 120px; /* Space for fixed footer */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: calc(100vh - 80px); /* Adjust height to prevent scrolling */
+            overflow: hidden;
         }
 
         /* Header Styling */
@@ -40,6 +46,19 @@
             margin-bottom: 20px;
             border-bottom: 2px solid #61dafb;
             padding-bottom: 10px;
+        }
+
+        /* Privacy Notice */
+        #privacyNotice {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            color: #856404;
+            width: 100%;
+            max-width: 800px;
+            text-align: left;
         }
 
         /* Progress Bar */
@@ -57,6 +76,47 @@
             height: 100%;
             background-color: #007BFF;
             transition: width 0.3s;
+        }
+
+        /* Drawing Section */
+        #drawing-section {
+            width: 100%;
+            max-width: 800px;
+            margin: 20px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #drawingCanvas {
+            border: 2px solid #007BFF;
+            border-radius: 10px;
+            cursor: crosshair;
+            background-color: #fff;
+            width: 400px;
+            height: 400px;
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 1em;
+            color: #fff;
+            background-color: #28a745;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+        }
+
+        .btn:hover {
+            background-color: #218838;
         }
 
         /* Central Camera Frame */
@@ -86,6 +146,11 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
+            max-height: 300px; /* Prevent overflow */
+            overflow-y: auto;
+            width: 100%;
+            max-width: 800px;
+            display: none; /* Hidden until start button is clicked */
         }
 
         .ring {
@@ -125,23 +190,6 @@
             text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
         }
 
-        /* Footer Styling */
-        footer {
-            width: 100%;
-            background: #ffffff; /* Changed to white */
-            color: #777;
-            padding: 15px;
-            border-radius: 20px 20px 0 0;
-            font-size: 0.9em;
-            text-align: center;
-            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
-            position: fixed;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
         /* Start Button */
         #startButton {
             padding: 10px 20px;
@@ -153,6 +201,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
             margin-bottom: 20px;
+            display: none; /* Hidden until drawing task is submitted */
         }
 
         #startButton:hover {
@@ -166,24 +215,50 @@
             color: #555;
         }
 
-        /* Privacy Notice */
-        #privacyNotice {
-            margin: 20px 0;
-            padding: 10px;
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 5px;
-            color: #856404;
+        /* Results Section */
+        #results-section {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            margin-top: 20px;
         }
 
-        /* Hide WebGazer's UI Completely */
-        #webgazerVideoFeed,
-        #webgazerFaceOverlay,
-        #webgazerFaceFeedbackBox {
-            display: none !important;
+        #results-section h2 {
+            font-size: 2em;
+            color: #007BFF;
+            margin-bottom: 10px;
         }
 
-        /* Responsive Design */
+        #results-section p {
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        /* Fixed Footer */
+        footer {
+            width: 100%;
+            background: #ffffff; /* White background */
+            color: #777;
+            padding: 15px;
+            border-radius: 20px 20px 0 0;
+            font-size: 0.9em;
+            text-align: center;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Footer Logo Styling */
+        .footer-logo {
+            margin-top: 5px; /* Reduced margin */
+            max-width: 40px; /* Reduced size */
+        }
+
         @media (max-width: 768px) {
             .ring {
                 width: 40px;
@@ -210,12 +285,11 @@
                 max-width: 30px; /* Reduced size on mobile */
                 margin-top: 4px;
             }
-        }
 
-        /* Footer Logo Styling */
-        .footer-logo {
-            margin-top: 5px; /* Reduced margin */
-            max-width: 40px; /* Reduced size */
+            #drawingCanvas {
+                width: 300px;
+                height: 300px;
+            }
         }
     </style>
 </head>
@@ -234,6 +308,16 @@
         <!-- Progress Bar -->
         <div id="progress-container">
             <div id="progress-bar"></div>
+        </div>
+
+        <!-- Drawing Section -->
+        <div id="drawing-section">
+            <h2>Task 1: Drawing Task</h2>
+            <canvas id="drawingCanvas" width="400" height="400"></canvas>
+            <div class="controls">
+                <button class="btn" id="clearBtn">Clear</button>
+                <button class="btn" id="submitDrawingBtn">Submit Drawing</button>
+            </div>
         </div>
 
         <!-- Central Camera Frame -->
@@ -256,7 +340,7 @@
         <div id="calibrationMessage">Press "Start Task" to begin.</div>
 
         <!-- Results Section -->
-        <div id="results-section" style="display: none;">
+        <div id="results-section">
             <h2>Assessment Complete</h2>
             <p id="results-message">Processing your data...</p>
         </div>
@@ -270,6 +354,10 @@
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             // DOM Elements
+            const drawingCanvas = document.getElementById('drawingCanvas');
+            const ctx = drawingCanvas.getContext('2d');
+            const clearBtn = document.getElementById('clearBtn');
+            const submitDrawingBtn = document.getElementById('submitDrawingBtn');
             const taskContainer = document.getElementById('task-container');
             const calibrationMessage = document.getElementById('calibrationMessage');
             const startButton = document.getElementById('startButton');
@@ -292,7 +380,7 @@
             // Configuration based on the research paper
             const taskTypes = ['serial', 'popout'];
             const numberOfRingsOptions = [4, 48];
-            const trialsPerCombination = 2; // Adjust to have a total of 10 search trials
+            const trialsPerCombination = 2; // Adjust to have a total of 8 search trials
 
             // Initialize trials
             // Add search trials
@@ -322,9 +410,66 @@
             const totalTrials = trials.length;
             updateProgress();
 
+            // Drawing Task Event Listeners
+            let drawing = false;
+            let x = 0;
+            let y = 0;
+
+            drawingCanvas.addEventListener('mousedown', e => {
+                x = e.offsetX;
+                y = e.offsetY;
+                drawing = true;
+            });
+
+            drawingCanvas.addEventListener('mousemove', e => {
+                if (drawing === true) {
+                    drawLine(ctx, x, y, e.offsetX, e.offsetY);
+                    x = e.offsetX;
+                    y = e.offsetY;
+                }
+            });
+
+            window.addEventListener('mouseup', e => {
+                if (drawing === true) {
+                    drawLine(ctx, x, y, e.offsetX, e.offsetY);
+                    x = 0;
+                    y = 0;
+                    drawing = false;
+                }
+            });
+
+            function drawLine(context, x1, y1, x2, y2) {
+                context.beginPath();
+                context.strokeStyle = '#007BFF';
+                context.lineWidth = 2;
+                context.moveTo(x1, y1);
+                context.lineTo(x2, y2);
+                context.stroke();
+                context.closePath();
+            }
+
+            clearBtn.addEventListener('click', () => {
+                ctx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+            });
+
+            submitDrawingBtn.addEventListener('click', () => {
+                const drawingData = drawingCanvas.toDataURL('image/png');
+                let experimentData = JSON.parse(localStorage.getItem('experimentData')) || {};
+                experimentData.drawingData = drawingData;
+                localStorage.setItem('experimentData', JSON.stringify(experimentData));
+
+                // Proceed to visual search task
+                drawingCanvas.style.display = 'none';
+                submitDrawingBtn.style.display = 'none';
+                clearBtn.style.display = 'none';
+                startButton.style.display = 'block';
+                taskContainer.style.display = 'none';
+            });
+
             // Start Button Event Listener
             startButton.addEventListener('click', function () {
                 startButton.style.display = 'none';
+                taskContainer.style.display = 'flex';
                 startCamera()
                     .then(() => {
                         calibrationMessage.textContent = 'Camera started. Preparing to start the task...';
@@ -467,7 +612,7 @@
 
             // End Experiment
             function endExperiment() {
-                taskContainer.innerHTML = '';
+                taskContainer.style.display = 'none';
                 calibrationMessage.innerHTML = `
                     <p>Correct Answers: ${correctCount}</p>
                     <p>Wrong Answers: ${wrongCount}</p>
@@ -476,15 +621,22 @@
                 trialInfo.textContent = '';
                 stopCamera();
 
-                // Store comprehensive experiment data
-                const experimentData = {
-                    trials: trials,
-                    allGazeData: allGazeData,
-                    targetPositions: targetPositions,
-                    correctCount: correctCount,
-                    wrongCount: wrongCount
-                };
+                // Retrieve existing experimentData
+                let experimentData = JSON.parse(localStorage.getItem('experimentData')) || {};
+
+                // Add or update experimentData with visual search results
+                experimentData.trials = trials;
+                experimentData.allGazeData = allGazeData;
+                experimentData.targetPositions = targetPositions;
+                experimentData.correctCount = correctCount;
+                experimentData.wrongCount = wrongCount;
+
+                // Store updated experimentData back to localStorage
                 localStorage.setItem('experimentData', JSON.stringify(experimentData));
+
+                // Show results section briefly
+                resultsSection.style.display = 'block';
+                resultsMessage.textContent = 'Processing your data...';
 
                 // Redirect to gaze5.html after a short delay
                 setTimeout(() => {
@@ -528,7 +680,9 @@
 
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
-                // Implement data saving logic here, such as sending data to a server
+                // Optionally, clear localStorage after displaying results
+                // localStorage.removeItem('experimentData');
+                webgazer.end();
             });
 
             // Helper Function to Capitalize First Letter
