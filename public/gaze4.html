@@ -30,6 +30,7 @@
             padding: 20px;
             margin-top: 20px;
             background-color: #ffffff; /* Ensuring container has white background */
+            padding-bottom: 80px; /* Added padding to prevent footer overlap */
         }
 
         /* Header Styling */
@@ -292,7 +293,7 @@
             // Configuration based on the research paper
             const taskTypes = ['serial', 'popout'];
             const numberOfRingsOptions = [4, 48];
-            const trialsPerCombination = 2; // Adjust to have a total of 10 search trials
+            const trialsPerCombination = 2; // Adjust to have a total of 8 search trials
 
             // Initialize trials
             // Add search trials
@@ -529,6 +530,7 @@
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
                 // Implement data saving logic here, such as sending data to a server
+                webgazer.end();
             });
 
             // Helper Function to Capitalize First Letter
