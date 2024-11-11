@@ -27,13 +27,13 @@
             max-width: 600px;
             background: #ffffff; /* White background */
             border-radius: 15px;
-            padding: 30px 20px; /* Reduced padding to fit content without scrolling */
+            padding: 30px 20px; /* Reduced padding */
             text-align: center;
             box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* Subtle shadow */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            height: 90vh; /* Ensure it fits within the viewport */
+            height: 90vh; /* Fit within viewport */
         }
 
         /* Header Styling */
@@ -51,6 +51,7 @@
         /* Main Content */
         main {
             flex-grow: 1;
+            overflow-y: auto; /* Allow internal scrolling if needed */
         }
 
         main p {
@@ -59,6 +60,18 @@
             margin-bottom: 20px;
             color: #333333;
             text-align: left;
+        }
+
+        main ul {
+            text-align: left;
+            margin-left: 20px;
+            margin-bottom: 20px;
+            padding-left: 0;
+            list-style-type: disc;
+        }
+
+        main ul li {
+            margin-bottom: 10px;
         }
 
         /* Button Styling */
@@ -86,20 +99,18 @@
 
         /* Footer Styling */
         footer {
-            position: relative;
             margin-top: 20px;
             color: #777777;
             font-size: 0.9em;
-            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         /* Logo Styling */
         .footer-logo {
-            position: absolute;
-            bottom: -25px; /* Position the logo overlapping the footer */
-            left: 50%;
-            transform: translateX(-50%);
-            max-width: 60px; /* Smaller size */
+            margin-top: 5px; /* Reduced margin */
+            max-width: 50px; /* Further reduced size */
         }
 
         /* Responsive Design */
@@ -117,6 +128,10 @@
                 font-size: 0.95em;
             }
 
+            main ul li {
+                font-size: 0.95em;
+            }
+
             #proceedButton {
                 padding: 10px 20px;
                 font-size: 0.95em;
@@ -124,8 +139,8 @@
             }
 
             .footer-logo {
-                max-width: 50px;
-                bottom: -20px;
+                max-width: 40px;
+                margin-top: 4px;
             }
         }
     </style>
@@ -137,9 +152,9 @@
             <h1>Alzheimer’s Assessment Instructions</h1>
         </header>
         <main>
-            <p>Welcome to the Alzheimer's Early Detection Assessment. This assessment is designed to help identify early signs of cognitive decline.</p>
+            <p>Welcome to the Alzheimer's Assessment. This assessment is designed to help identify early signs of cognitive decline.</p>
             <p>Here’s what you need to know before starting:</p>
-            <ul style="text-align: left; margin-left: 20px; margin-bottom: 20px;">
+            <ul>
                 <li><strong>Duration:</strong> The entire process will take approximately 10-15 minutes.</li>
                 <li><strong>Equipment:</strong> Ensure your device has a functioning webcam and a stable internet connection.</li>
                 <li><strong>Environment:</strong> Choose a quiet and well-lit place to complete the assessment without interruptions.</li>
@@ -150,8 +165,8 @@
             <button id="proceedButton">Proceed to Assessment</button>
         </main>
         <footer>
-            <p>&copy; 2024 Opyrithis Assessment. All rights reserved.</p>
             <img src="images/logo.png" alt="Opyrithis Assessment Logo" class="footer-logo">
+            <p>&copy; 2024 Opyrithis Assessment. All rights reserved.</p>
         </footer>
     </div>
 
@@ -159,7 +174,7 @@
         document.addEventListener('DOMContentLoaded', function () {
             const proceedButton = document.getElementById('proceedButton');
             proceedButton.addEventListener('click', function () {
-                window.location.href = 'assessment.html'; // Updated to a generic assessment page
+                window.location.href = 'assessment.html'; // Ensure this points to the correct assessment page
             });
         });
     </script>
