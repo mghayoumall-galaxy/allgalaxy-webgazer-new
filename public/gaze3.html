@@ -376,6 +376,21 @@
                 const ctx = canvas.getContext('2d');
                 let drawing = false;
 
+                // Function to set canvas size
+                function setCanvasSize() {
+                    const rect = canvas.getBoundingClientRect();
+                    const devicePixelRatio = window.devicePixelRatio || 1;
+                    canvas.width = rect.width * devicePixelRatio;
+                    canvas.height = rect.height * devicePixelRatio;
+                    ctx.scale(devicePixelRatio, devicePixelRatio);
+                }
+
+                // Initial sizing
+                setCanvasSize();
+
+                // Resize canvas on window resize
+                window.addEventListener('resize', setCanvasSize);
+
                 // Set up mouse events for drawing
                 canvas.addEventListener('mousedown', (e) => {
                     drawing = true;
@@ -447,13 +462,40 @@
                     drawingData1 = dataURL;
                     statusDiv.innerHTML = `<p style="color: green;">Drawing 1 saved successfully.</p>`;
                     drawingSection1.style.display = 'none';
+                    sendDrawingToServer(dataURL, 1);
                     startClockTask();
                 } else if (drawingNumber === 2) {
                     drawingData2 = dataURL;
                     statusDiv.innerHTML = `<p style="color: green;">Drawing 2 saved successfully.</p>`;
                     drawingSection2.style.display = 'none';
+                    sendDrawingToServer(dataURL, 2);
                     endExperiment();
                 }
+            }
+
+            // Send Drawing to Server
+            function sendDrawingToServer(dataURL, drawingNumber) {
+                // Extract Base64 data
+                const base64Data = dataURL.replace(/^data:image\/png;base64,/, "");
+
+                // Send to server using fetch
+                fetch('/save-drawing', { // Replace with your server endpoint
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        drawingNumber: drawingNumber,
+                        imageData: base64Data
+                    })
+                })
+                .then(response => response.json())
+                .then(result => {
+                    console.log(`Drawing ${drawingNumber} saved successfully on server.`, result);
+                })
+                .catch(error => {
+                    console.error(`Error saving Drawing ${drawingNumber}:`, error);
+                });
             }
 
             // Start Drawing Task 1
@@ -479,32 +521,6 @@
                 calibrationMessage.innerHTML = `Assessment complete. Thank you for your participation.`;
                 trialInfo.textContent = '';
                 stopCamera();
-
-                // Store experiment data
-                // You can implement data saving logic here, e.g., send to server via fetch
-                // Example:
-                /*
-                const data = {
-                    drawing1: drawingData1,
-                    drawing2: drawingData2,
-                    // Add more data if needed
-                };
-
-                fetch('your-server-endpoint', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                })
-                .then(response => response.json())
-                .then(result => {
-                    console.log('Success:', result);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-                */
 
                 // Redirect to gaze4.html after a short delay
                 setTimeout(() => {
