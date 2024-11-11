@@ -24,6 +24,7 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #ffffff; /* White background */
             color: #333;
+            overflow-x: hidden; /* Prevent horizontal scrolling */
         }
 
         /* Container for Main Content */
@@ -187,12 +188,6 @@
                 max-height: 200px;
             }
         }
-
-        /* Remove blank space on the right */
-        html, body {
-            width: 100%;
-            overflow-x: hidden;
-        }
     </style>
 </head>
 <body>
@@ -315,6 +310,9 @@
 
                         // Placeholder for model prediction
                         drawingPrediction.textContent = 'Analysis pending...';
+
+                        // Generate a sample chart for demonstration
+                        generateDrawingChart();
                     };
 
                     // Future Integration: Load the trained TensorFlow.js model and make predictions
@@ -374,6 +372,46 @@
                     drawingPrediction.textContent = 'An error occurred during analysis.';
                     drawingAdvice.textContent = 'Please try again or contact support.';
                 }
+            }
+
+            // Generate a sample chart for Drawing Analysis
+            function generateDrawingChart() {
+                // Sample data for demonstration purposes
+                const data = {
+                    labels: ['Feature A', 'Feature B', 'Feature C', 'Feature D'],
+                    datasets: [{
+                        label: 'Drawing Features',
+                        data: [12, 19, 3, 5],
+                        backgroundColor: [
+                            '#28a745',
+                            '#ffc107',
+                            '#dc3545',
+                            '#17a2b8'
+                        ],
+                    }]
+                };
+
+                new Chart(drawingChartCtx, {
+                    type: 'bar',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Drawing Analysis Features'
+                            },
+                            legend: {
+                                display: false,
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    },
+                });
             }
 
             // Placeholder for mapping prediction to text
@@ -446,6 +484,40 @@
                             },
                             legend: {
                                 position: 'bottom',
+                            }
+                        }
+                    },
+                });
+
+                // Optionally, display a line chart for reaction times
+                const reactionTimeData = {
+                    labels: trials.map((_, index) => `Trial ${index + 1}`),
+                    datasets: [{
+                        label: 'Reaction Time (ms)',
+                        data: reactionTimes,
+                        fill: false,
+                        borderColor: '#007BFF',
+                        tension: 0.1
+                    }]
+                };
+
+                new Chart(document.createElement('canvas'), {
+                    type: 'line',
+                    data: reactionTimeData,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            title: {
+                                display: true,
+                                text: 'Task 2 Performance: Reaction Times'
+                            },
+                            legend: {
+                                display: false,
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true
                             }
                         }
                     },
