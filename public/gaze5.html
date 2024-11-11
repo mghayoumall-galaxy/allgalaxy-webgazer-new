@@ -34,7 +34,7 @@
             width: 100%;
             max-width: 1200px;
             margin: 0 auto;
-            overflow: hidden; /* Prevent scrolling */
+            overflow: auto; /* Allow scrolling if content overflows */
         }
 
         /* Header Styling */
@@ -197,7 +197,7 @@
             <p><strong>Privacy Notice:</strong> All data is anonymized and stored securely.</p>
         </div>
 
-        <!-- First Report: Drawing Analysis -->
+        <!-- Task 1 Report: Drawing Analysis -->
         <div class="result-section" id="drawing-report">
             <h2>Task 1: Drawing Analysis</h2>
             <img id="drawingImage" src="" alt="User Drawing">
@@ -210,9 +210,9 @@
             </div>
         </div>
 
-        <!-- Second Report: Task Performance -->
+        <!-- Task 2 Report: Visual Search Performance -->
         <div class="result-section" id="task-report">
-            <h2>Task 2: Performance Analysis</h2>
+            <h2>Task 2: Visual Search Performance</h2>
             <div class="result">
                 Correct Answers: <span id="correctCount">0</span>
             </div>
@@ -239,11 +239,13 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // DOM Elements for Task 1: Drawing Analysis
             const drawingPrediction = document.getElementById('drawingPrediction');
             const drawingAdvice = document.getElementById('drawingAdvice');
             const drawingChartCtx = document.getElementById('drawingChart').getContext('2d');
             const drawingImage = document.getElementById('drawingImage');
 
+            // DOM Elements for Task 2: Visual Search Performance
             const correctCountEl = document.getElementById('correctCount');
             const wrongCountEl = document.getElementById('wrongCount');
             const averageReactionTimeEl = document.getElementById('averageReactionTime');
@@ -271,11 +273,11 @@
             // Function to handle no data scenario
             function displayNoData() {
                 drawingPrediction.textContent = 'No data available.';
-                drawingAdvice.textContent = 'Please complete the experiment first.';
+                drawingAdvice.textContent = 'Please complete the assessment first.';
                 correctCountEl.textContent = 'N/A';
                 wrongCountEl.textContent = 'N/A';
                 averageReactionTimeEl.textContent = 'N/A';
-                taskAdvice.textContent = 'Please complete the experiment first.';
+                taskAdvice.textContent = 'Please complete the assessment first.';
             }
 
             // Display Drawing Prediction Results
@@ -431,7 +433,7 @@
                         plugins: {
                             title: {
                                 display: true,
-                                text: 'Task Performance: Correct vs Incorrect Answers'
+                                text: 'Task 2 Performance: Correct vs Incorrect Answers'
                             },
                             legend: {
                                 position: 'bottom',
