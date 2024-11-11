@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Eye Movement Data Collection & Cognitive Assessment</title>
+    <title>Alzheimer’s Assessment Tool</title>
     <!-- WebGazer for Eye Tracking -->
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <style>
@@ -14,7 +14,7 @@
             box-sizing: border-box;
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f0f2f5;
+            background-color: #ffffff; /* Changed to white */
             color: #333;
             display: flex;
             flex-direction: column;
@@ -29,6 +29,7 @@
             text-align: center;
             padding: 20px;
             margin-top: 20px;
+            background-color: #ffffff; /* Ensuring container has white background */
         }
 
         /* Header Styling */
@@ -127,7 +128,7 @@
         /* Footer Styling */
         footer {
             width: 100%;
-            background: #ffffff;
+            background: #ffffff; /* Changed to white */
             color: #777;
             padding: 15px;
             border-radius: 20px 20px 0 0;
@@ -136,6 +137,9 @@
             box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
             position: fixed;
             bottom: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         /* Start Button */
@@ -160,6 +164,39 @@
             margin-top: 15px;
             font-size: 1.1em;
             color: #555;
+        }
+
+        /* Drawing Upload Section */
+        #drawing-section {
+            margin: 20px 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #drawingUpload {
+            margin-top: 10px;
+        }
+
+        #uploadButton {
+            padding: 8px 16px;
+            font-size: 1em;
+            background-color: #17a2b8;
+            color: #ffffff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+
+        #uploadButton:hover {
+            background-color: #138496;
+        }
+
+        #uploadStatus {
+            margin-top: 10px;
+            font-size: 1em;
         }
 
         /* Privacy Notice */
@@ -200,6 +237,18 @@
             #progress-container {
                 height: 15px;
             }
+
+            /* Footer Logo Responsive */
+            .footer-logo {
+                max-width: 30px; /* Reduced size on mobile */
+                margin-top: 4px;
+            }
+        }
+
+        /* Footer Logo Styling */
+        .footer-logo {
+            margin-top: 5px; /* Reduced margin */
+            max-width: 40px; /* Reduced size */
         }
     </style>
 </head>
@@ -207,7 +256,7 @@
 <body>
     <div class="container">
         <header>
-            <h1>Data Collection & Cognitive Assessment</h1>
+            <h1>Alzheimer’s Assessment Instructions</h1>
         </header>
 
         <!-- Privacy Notice -->
@@ -226,7 +275,7 @@
         </div>
 
         <!-- Start Button -->
-        <button id="startButton">Start Second Assestment Task</button>
+        <button id="startButton">Start Second Assessment Task</button>
 
         <!-- Trial Information -->
         <div id="trialInfo"></div>
@@ -239,15 +288,19 @@
         <!-- Calibration Message -->
         <div id="calibrationMessage">Press "Start Task" to begin.</div>
 
-        <!-- Results Section -->
-        <div id="results-section" style="display: none;">
-            <h2>Assessment Complete</h2>
-            <p id="results-message">Processing your data...</p>
+        <!-- Drawing Upload Section -->
+        <div id="drawing-section">
+            <h2>Drawing Task</h2>
+            <p>Please draw the image you memorized and a clock showing 10:10 on a piece of paper.</p>
+            <input type="file" id="drawingUpload" accept="image/*">
+            <button id="uploadButton">Upload Drawing</button>
+            <div id="uploadStatus"></div>
         </div>
     </div>
 
     <footer>
-        <p>&copy; 2024 Eye Movement Research</p>
+        <img src="images/logo.png" alt="Alzheimer’s Assessment Logo" class="footer-logo">
+        <p>&copy; 2024 Alzheimer's Assessment Tool. All rights reserved.</p>
     </footer>
 
     <script>
@@ -258,51 +311,18 @@
             const startButton = document.getElementById('startButton');
             const trialInfo = document.getElementById('trialInfo');
             const webcamVideo = document.getElementById('webcamVideo');
-            const resultsSection = document.getElementById('results-section');
-            const resultsMessage = document.getElementById('results-message');
+            const drawingSection = document.getElementById('drawing-section');
+            const drawingUpload = document.getElementById('drawingUpload');
+            const uploadButton = document.getElementById('uploadButton');
+            const uploadStatus = document.getElementById('uploadStatus');
             const progressBar = document.getElementById('progress-bar');
 
             // Configuration
-            const searchTimeLimit = 60000; // 60 seconds per search trial
             let trialPointer = 0; // Pointer to track current trial
-            let trials = [];
-            let targetPositions = []; // To store target positions for accuracy calculation
-
-            // Counters for correct and wrong answers
-            let correctCount = 0;
-            let wrongCount = 0;
-
-            // Configuration based on the research paper
-            const taskTypes = ['serial', 'popout'];
-            const numberOfRingsOptions = [4, 48];
-            const trialsPerCombination = 2; // Adjust to have a total of 10 search trials
-
-            // Initialize trials
-            // Add search trials
-            for (let task of taskTypes) {
-                for (let numRings of numberOfRingsOptions) {
-                    for (let i = 0; i < trialsPerCombination; i++) {
-                        trials.push({
-                            taskType: task,
-                            numberOfRings: numRings,
-                            reactionTime: null,
-                            gazeData: []
-                        });
-                    }
-                }
-            }
-
-            // Shuffle search trials
-            shuffleArray(trials);
-
-            // Array to store all gaze data
-            let allGazeData = [];
-
-            let timer;
-            let trialStartTime;
+            const memoryImage = 'images/image1.jpg'; // Ensure this image exists in the 'images' folder
 
             // Initialize Progress
-            const totalTrials = trials.length;
+            const totalTrials = 1; // Only one trial in this task
             updateProgress();
 
             // Start Button Event Listener
@@ -310,8 +330,8 @@
                 startButton.style.display = 'none';
                 startCamera()
                     .then(() => {
-                        calibrationMessage.textContent = 'Camera started. Preparing to start the task...';
-                        setTimeout(startNextTrial, 2000); // Start with the first visual search trial
+                        calibrationMessage.textContent = 'Visual Memory Task: Memorize the image for 10 seconds.';
+                        setTimeout(startVisualMemoryTask, 2000); // Delay before starting memory task
                     })
                     .catch(error => {
                         console.error('Error starting camera:', error);
@@ -340,162 +360,90 @@
                 }
             }
 
-            // Start the next trial (Visual Search)
-            function startNextTrial() {
-                if (trialPointer >= trials.length) {
-                    endExperiment();
+            // Start Visual Memory Task
+            function startVisualMemoryTask() {
+                trialInfo.textContent = '';
+                displayMemoryImage();
+            }
+
+            // Display Memory Image
+            function displayMemoryImage() {
+                // Display the image
+                taskContainer.innerHTML = `<img src="${memoryImage}" alt="Memory Image" style="max-width: 100%; max-height: 500px;">`;
+
+                // Start timer for 10 seconds
+                setTimeout(() => {
+                    taskContainer.innerHTML = '';
+                    calibrationMessage.textContent = 'Please draw the image you memorized and a clock showing 10:10 on a piece of paper.';
+                    showDrawingSection();
+                }, 10000);
+            }
+
+            // Show Drawing Upload Section
+            function showDrawingSection() {
+                drawingSection.style.display = 'flex';
+            }
+
+            // Handle Drawing Upload
+            uploadButton.addEventListener('click', function () {
+                const files = drawingUpload.files;
+                if (files.length === 0) {
+                    uploadStatus.textContent = 'Please select a drawing to upload.';
+                    uploadStatus.style.color = 'red';
                     return;
                 }
 
-                const trial = trials[trialPointer];
-                trialInfo.textContent = `Trial ${trialPointer + 1} of ${trials.length}: ${capitalizeFirstLetter(trial.taskType)} Search with ${trial.numberOfRings} Rings`;
-
-                createSearchTask(trial.taskType, trial.numberOfRings, trialPointer);
-                calibrationMessage.textContent = 'Please find the target as quickly as possible.';
-                trialStartTime = Date.now();
-
-                startTimer(trialPointer);
-                trialPointer++;
-                updateProgress();
-            }
-
-            // Create Search Task
-            function createSearchTask(taskType, numberOfRings, trialIndex) {
-                taskContainer.innerHTML = '';
-                const targetPosition = Math.floor(Math.random() * numberOfRings);
-                targetPositions[trialIndex] = targetPosition; // Store target position for accuracy
-
-                for (let i = 0; i < numberOfRings; i++) {
-                    const ring = document.createElement('div');
-                    ring.classList.add('ring');
-
-                    if (taskType === 'serial' || taskType === 'popout') {
-                        // All distractors point upward, one target points downward
-                        if (i === targetPosition) {
-                            ring.textContent = '↓'; // Downward for target
-                            // No background color highlighting
-                        } else {
-                            ring.textContent = '↑'; // Upward for distractors
-                            // Uniform background
-                        }
-                    }
-
-                    taskContainer.appendChild(ring);
-                    ring.addEventListener('click', onRingClick.bind(null, i === targetPosition, trialIndex, ring));
+                const file = files[0];
+                if (!file.type.startsWith('image/')) {
+                    uploadStatus.textContent = 'Invalid file type. Please upload an image.';
+                    uploadStatus.style.color = 'red';
+                    return;
                 }
-            }
 
-            // Handle Ring Click
-            function onRingClick(isTarget, trialIndex, ringElement) {
-                if (isTarget) {
-                    clearTimeout(timer);
-                    const reactionTime = Date.now() - trialStartTime;
-                    calibrationMessage.textContent = `Correct! Reaction Time: ${reactionTime} ms.`;
-
-                    // Update correct count
-                    correctCount++;
-
-                    // Visual Feedback
-                    ringElement.classList.add('correct');
-
-                    // Store trial data
-                    trials[trialIndex].reactionTime = reactionTime;
-                    trials[trialIndex].gazeData = gazeData.slice(); // Copy current gaze data
-                    allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
-                    gazeData = []; // Reset for next trial
-
-                    // Proceed to next trial automatically after a short delay
-                    setTimeout(() => {
-                        startNextTrial();
-                    }, 1000);
-                } else {
-                    calibrationMessage.textContent = 'Incorrect target. Recording and moving to next task.';
-
-                    // Update wrong count
-                    wrongCount++;
-
-                    // Visual Feedback
-                    ringElement.classList.add('incorrect');
-
-                    // Store trial data with incorrect flag
-                    trials[trialIndex].reactionTime = null; // No reaction time for incorrect
-                    trials[trialIndex].gazeData = gazeData.slice(); // Copy current gaze data
-                    allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
-                    gazeData = []; // Reset for next trial
-
-                    // Proceed to next trial automatically after a short delay
-                    setTimeout(() => {
-                        startNextTrial();
-                    }, 1000);
+                if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                    uploadStatus.textContent = 'File is too large. Please upload an image smaller than 5MB.';
+                    uploadStatus.style.color = 'red';
+                    return;
                 }
-            }
 
-            // Start Timer for Trial
-            function startTimer(trialIndex) {
-                timer = setTimeout(() => {
-                    calibrationMessage.textContent = 'Time is up! Recording and moving to next task...';
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const imgData = e.target.result;
+                    uploadStatus.innerHTML = `<p style="color: green;">Drawing uploaded successfully.</p><img src="${imgData}" alt="Uploaded Drawing" style="max-width: 300px; max-height: 300px;">`;
 
-                    // Store trial data with null reaction time
-                    trials[trialIndex].reactionTime = null;
-                    trials[trialIndex].gazeData = gazeData.slice(); // Copy current gaze data
-                    allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
-                    gazeData = []; // Reset for next trial
-
-                    // Proceed to next trial automatically after a short delay
+                    // Proceed to end the experiment after a short delay
                     setTimeout(() => {
-                        startNextTrial();
+                        drawingSection.style.display = 'none';
+                        uploadStatus.innerHTML = '';
+                        drawingUpload.value = ''; // Reset file input
+                        endExperiment();
                     }, 1000);
-                }, searchTimeLimit);
-            }
+                };
+                reader.readAsDataURL(file);
+            });
 
             // End Experiment
             function endExperiment() {
                 taskContainer.innerHTML = '';
-                calibrationMessage.innerHTML = `
-                    <p>Correct Answers: ${correctCount}</p>
-                    <p>Wrong Answers: ${wrongCount}</p>
-                    <p>Data Collection complete. Redirecting to results...</p>
-                `;
+                calibrationMessage.innerHTML = `Assessment complete. Thank you for your participation.`;
                 trialInfo.textContent = '';
                 stopCamera();
 
-                // Store comprehensive experiment data
-                const experimentData = {
-                    trials: trials,
-                    allGazeData: allGazeData,
-                    targetPositions: targetPositions,
-                    correctCount: correctCount,
-                    wrongCount: wrongCount
-                };
-                localStorage.setItem('experimentData', JSON.stringify(experimentData));
+                // Store experiment data
+                // You can implement data saving logic here
 
-                // Redirect to gaze5.html after a short delay
+                // Redirect to gaze3.html after a short delay
                 setTimeout(() => {
-                    window.location.href = 'gaze5.html';
-                }, 3000);
+                    window.location.href = 'gaze3.html';
+                }, 2000); // Redirect after 2 seconds
             }
 
-            // Shuffle array in-place using Fisher-Yates algorithm
-            function shuffleArray(array) {
-                for (let i = array.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [array[i], array[j]] = [array[j], array[i]];
-                }
-            }
-
-            // Initialize WebGazer for Eye Tracking
-            let gazeData = []; // Current trial's gaze data
+            // Initialize WebGazer for Eye Tracking (Retained as per original code)
             webgazer.setGazeListener(function (data, elapsedTime) {
                 if (data == null) {
                     return;
                 }
-                // Store gaze data with timestamp
-                gazeData.push({
-                    x: data.x,
-                    y: data.y,
-                    timestamp: elapsedTime,
-                    pupilSize: data.pupil || null // Assuming WebGazer provides pupil size
-                });
+                // You can store gaze data here if needed
             }).begin();
 
             // Disable WebGazer’s built-in UI
@@ -511,13 +459,8 @@
 
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
-                // Implement data saving logic here, such as sending data to a server
+                webgazer.end();
             });
-
-            // Helper Function to Capitalize First Letter
-            function capitalizeFirstLetter(string) {
-                return string.charAt(0).toUpperCase() + string.slice(1);
-            }
 
             // Update Progress Bar
             function updateProgress() {
