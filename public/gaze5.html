@@ -1,3 +1,4 @@
+<!-- gaze5.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,31 +10,30 @@
     <script defer src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Basic Reset */
-        body,
-        html {
+        body, html {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #ffffff; /* Changed to white */
+            background-color: #ffffff; /* White background */
             color: #333;
             display: flex;
-            justify-content: center;
-            align-items: center;
             flex-direction: column;
+            min-height: 100vh;
         }
 
         /* Container */
         .container {
-            text-align: center;
-            padding: 40px;
-            max-width: 900px;
-            background-color: #fff;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            border-radius: 15px;
-            margin: 20px;
-            padding-bottom: 100px; /* Added padding to prevent footer overlap */
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            padding-bottom: 120px; /* Space for fixed footer */
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
         /* Header Styling */
@@ -45,35 +45,57 @@
             padding-bottom: 10px;
         }
 
+        /* Privacy Notice */
+        #privacyNotice {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            color: #856404;
+            width: 100%;
+            max-width: 800px;
+            text-align: left;
+        }
+
         /* Result Sections */
         .result-section {
+            width: 100%;
+            max-width: 800px;
             margin: 30px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .result-section h2 {
             font-size: 2em;
             margin-bottom: 15px;
             color: #007BFF;
+            text-align: center;
         }
 
         .result {
-            font-size: 1.8em;
+            font-size: 1.5em;
             font-weight: bold;
             color: #333;
             margin: 10px 0;
+            text-align: center;
         }
 
         .advice {
-            font-size: 1.2em;
-            margin-bottom: 30px;
+            font-size: 1.1em;
+            margin-bottom: 20px;
             color: #555;
+            text-align: center;
+            max-width: 700px;
         }
 
         /* Button Styling */
         .btn {
             display: inline-block;
-            padding: 15px 30px;
-            font-size: 1.1em;
+            padding: 12px 25px;
+            font-size: 1em;
             color: #fff;
             background-color: #007BFF;
             border: none;
@@ -81,7 +103,7 @@
             cursor: pointer;
             text-decoration: none;
             transition: background-color 0.3s, transform 0.2s;
-            margin-top: 20px;
+            margin-top: 10px;
         }
 
         .btn:hover {
@@ -93,41 +115,13 @@
         .chart-container {
             width: 100%;
             max-width: 600px;
-            margin: 0 auto 40px auto;
+            margin: 20px 0;
         }
 
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                padding: 20px;
-            }
-
-            header h1 {
-                font-size: 2em;
-            }
-
-            .result {
-                font-size: 1.5em;
-            }
-
-            .advice {
-                font-size: 1em;
-            }
-
-            .btn {
-                padding: 12px 25px;
-                font-size: 1em;
-            }
-
-            .chart-container {
-                max-width: 100%;
-            }
-        }
-
-        /* Footer Styling */
+        /* Fixed Footer */
         footer {
             width: 100%;
-            background: #ffffff; /* Changed to white */
+            background: #ffffff; /* White background */
             color: #777;
             padding: 15px;
             border-radius: 20px 20px 0 0;
@@ -136,6 +130,7 @@
             box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
             position: fixed;
             bottom: 0;
+            left: 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -151,6 +146,23 @@
             .footer-logo {
                 max-width: 30px; /* Further reduced size on mobile */
                 margin-top: 4px;
+            }
+
+            header h1 {
+                font-size: 1.5em;
+            }
+
+            .result {
+                font-size: 1.3em;
+            }
+
+            .advice {
+                font-size: 1em;
+            }
+
+            .btn {
+                padding: 10px 20px;
+                font-size: 0.9em;
             }
         }
     </style>
@@ -197,14 +209,7 @@
             </div>
         </div>
 
-        <!-- Combined Charts (Optional) -->
-        <!-- You can uncomment and customize these if needed -->
-        <!--
-        <div class="chart-container">
-            <canvas id="combinedChart" width="400" height="200" style="max-width: 100%;"></canvas>
-        </div>
-        -->
-
+        <!-- Start Again Button -->
         <a href="gaze4.html" class="btn">Start Again</a>
     </div>
 
@@ -282,11 +287,8 @@
                         const adviceText = getAdviceBasedOnPrediction(predictedClass);
                         drawingAdvice.textContent = adviceText;
 
-                        // Optionally, display a chart (e.g., confidence scores)
-                        // For simplicity, we'll show a dummy chart here
-                        // Replace with actual data if available
-
-                        // Example: Confidence scores (assuming 3 classes)
+                        // Display a pie chart showing confidence scores (optional)
+                        // Uncomment and customize based on your model's output
                         /*
                         const confidenceScores = prediction.dataSync();
                         new Chart(drawingChartCtx, {
@@ -351,6 +353,7 @@
             function displayTaskResults(experimentData) {
                 const trials = experimentData.trials || [];
 
+                // Calculate correct and wrong counts
                 const correctCount = trials.filter(trial => trial.reactionTime !== null && trial.gazeData.length > 0).length;
                 const wrongCount = trials.length - correctCount;
 
@@ -370,7 +373,7 @@
                 const taskAdviceText = getTaskAdvice(correctCount, wrongCount, averageReactionTime);
                 taskAdvice.textContent = taskAdviceText;
 
-                // Display a Chart for Correct vs Incorrect Answers
+                // Display a Doughnut Chart for Correct vs Incorrect Answers
                 new Chart(taskChartCtx, {
                     type: 'doughnut',
                     data: {
@@ -389,6 +392,9 @@
                             title: {
                                 display: true,
                                 text: 'Task Performance: Correct vs Incorrect Answers'
+                            },
+                            legend: {
+                                position: 'bottom',
                             }
                         }
                     },
@@ -397,21 +403,21 @@
 
             // Provide Advice Based on Task Performance
             function getTaskAdvice(correct, wrong, avgRT) {
-                if (correct > wrong && avgRT < 3000) { // Thresholds can be adjusted
+                // Define thresholds based on your study's criteria
+                const reactionTimeThreshold = 3000; // in ms
+                const correctnessThreshold = 0.6; // 60% correct
+
+                const total = correct + wrong;
+                const correctnessRate = total > 0 ? correct / total : 0;
+
+                if (correctnessRate >= correctnessThreshold && avgRT < reactionTimeThreshold) {
                     return 'Excellent performance! Your task metrics indicate healthy cognitive function.';
-                } else if (correct >= wrong && avgRT < 5000) {
+                } else if (correctnessRate >= correctnessThreshold && avgRT < (reactionTimeThreshold * 1.5)) {
                     return 'Good performance. However, consider monitoring your cognitive health regularly.';
                 } else {
                     return 'Your task performance shows potential signs of cognitive impairment. It is recommended to consult a healthcare professional.';
                 }
             }
-
-            // Optionally, display a combined chart
-            /*
-            function displayCombinedChart(drawingData, taskData) {
-                // Implement combined chart logic if needed
-            }
-            */
 
             // Ensure data is saved when the page is unloaded
             window.addEventListener('beforeunload', function (e) {
@@ -419,6 +425,7 @@
                 // For example, you can clear the localStorage if desired
                 // localStorage.removeItem('experimentData');
             });
-        </script>
-    </body>
+        });
+    </script>
+</body>
 </html>

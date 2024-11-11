@@ -1,3 +1,4 @@
+<!-- gaze4.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,30 +8,34 @@
     <script defer src="https://cdn.jsdelivr.net/npm/webgazer"></script>
     <style>
         /* Basic Reset */
-        body,
-        html {
+        body, html {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             height: 100%;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #ffffff; /* Changed to white */
+            background-color: #ffffff; /* White background */
             color: #333;
             display: flex;
             flex-direction: column;
             justify-content: flex-start;
             align-items: center;
+            overflow: hidden; /* Prevent scrolling */
         }
 
         /* Container */
         .container {
-            width: 90%;
+            width: 100%;
             max-width: 1200px;
             text-align: center;
             padding: 20px;
-            margin-top: 20px;
-            background-color: #ffffff; /* Ensuring container has white background */
-            padding-bottom: 80px; /* Added padding to prevent footer overlap */
+            background-color: #ffffff; /* White background */
+            padding-bottom: 100px; /* Space for fixed footer */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: calc(100vh - 80px); /* Adjust height to prevent scrolling */
+            overflow: hidden;
         }
 
         /* Header Styling */
@@ -41,6 +46,19 @@
             margin-bottom: 20px;
             border-bottom: 2px solid #61dafb;
             padding-bottom: 10px;
+        }
+
+        /* Privacy Notice */
+        #privacyNotice {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            color: #856404;
+            width: 100%;
+            max-width: 800px;
+            text-align: left;
         }
 
         /* Progress Bar */
@@ -87,6 +105,10 @@
             align-items: center;
             flex-wrap: wrap;
             gap: 10px;
+            max-height: 300px; /* Prevent overflow */
+            overflow-y: auto;
+            width: 100%;
+            max-width: 800px;
         }
 
         .ring {
@@ -126,23 +148,6 @@
             text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
         }
 
-        /* Footer Styling */
-        footer {
-            width: 100%;
-            background: #ffffff; /* Changed to white */
-            color: #777;
-            padding: 15px;
-            border-radius: 20px 20px 0 0;
-            font-size: 0.9em;
-            text-align: center;
-            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
-            position: fixed;
-            bottom: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
         /* Start Button */
         #startButton {
             padding: 10px 20px;
@@ -167,24 +172,50 @@
             color: #555;
         }
 
-        /* Privacy Notice */
-        #privacyNotice {
-            margin: 20px 0;
-            padding: 10px;
-            background-color: #fff3cd;
-            border: 1px solid #ffeeba;
-            border-radius: 5px;
-            color: #856404;
+        /* Results Section */
+        #results-section {
+            display: none;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            margin-top: 20px;
         }
 
-        /* Hide WebGazer's UI Completely */
-        #webgazerVideoFeed,
-        #webgazerFaceOverlay,
-        #webgazerFaceFeedbackBox {
-            display: none !important;
+        #results-section h2 {
+            font-size: 2em;
+            color: #007BFF;
+            margin-bottom: 10px;
         }
 
-        /* Responsive Design */
+        #results-section p {
+            font-size: 1.2em;
+            color: #555;
+        }
+
+        /* Fixed Footer */
+        footer {
+            width: 100%;
+            background: #ffffff; /* White background */
+            color: #777;
+            padding: 15px;
+            border-radius: 20px 20px 0 0;
+            font-size: 0.9em;
+            text-align: center;
+            box-shadow: 0 -5px 15px rgba(0, 0, 0, 0.2);
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Footer Logo Styling */
+        .footer-logo {
+            margin-top: 5px; /* Reduced margin */
+            max-width: 40px; /* Reduced size */
+        }
+
         @media (max-width: 768px) {
             .ring {
                 width: 40px;
@@ -211,12 +242,6 @@
                 max-width: 30px; /* Reduced size on mobile */
                 margin-top: 4px;
             }
-        }
-
-        /* Footer Logo Styling */
-        .footer-logo {
-            margin-top: 5px; /* Reduced margin */
-            max-width: 40px; /* Reduced size */
         }
     </style>
 </head>
@@ -257,7 +282,7 @@
         <div id="calibrationMessage">Press "Start Task" to begin.</div>
 
         <!-- Results Section -->
-        <div id="results-section" style="display: none;">
+        <div id="results-section">
             <h2>Assessment Complete</h2>
             <p id="results-message">Processing your data...</p>
         </div>
