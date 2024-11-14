@@ -87,7 +87,7 @@
         #camera-frame {
             position: relative;
             margin: 20px auto;
-            width: 150px; /* Adjusted size for better fit */
+            width: 150px;
             height: 150px;
             border-radius: 50%;
             overflow: hidden;
@@ -105,15 +105,15 @@
         /* Task Container */
         #task-container {
             margin: 20px 0;
-            display: none; /* Hidden initially */
-            display: grid; /* Set to grid when displayed */
+            display: none;
+            display: grid;
             grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
             gap: 15px;
             width: 100%;
             max-width: 800px;
             height: auto;
-            justify-items: center; /* Center items horizontally */
-            align-items: center; /* Center items vertically */
+            justify-items: center;
+            align-items: center;
         }
 
         /* Ring Styling */
@@ -128,21 +128,21 @@
             font-size: 1.5em;
             cursor: pointer;
             transition: transform 0.2s, background-color 0.2s;
-            background-color: #f0f2f5; /* Uniform background color */
+            background-color: #f0f2f5;
         }
 
         .ring:hover {
             transform: scale(1.1);
-            background-color: #e0e0e0; /* Subtle hover effect */
+            background-color: #e0e0e0;
         }
 
         .ring.correct {
-            background-color: #28a745; /* Green */
+            background-color: #28a745;
             color: #fff;
         }
 
         .ring.incorrect {
-            background-color: #dc3545; /* Red */
+            background-color: #dc3545;
             color: #fff;
         }
 
@@ -165,7 +165,7 @@
             cursor: pointer;
             transition: background-color 0.3s;
             margin-bottom: 20px;
-            display: block; /* Visible by default */
+            display: block;
         }
 
         #startButton:hover {
@@ -197,12 +197,13 @@
         #results-section p {
             font-size: 1.2em;
             color: #555;
+            margin-bottom: 10px;
         }
 
         /* Footer Styling */
         footer {
             width: 100%;
-            background: #ffffff; /* White background */
+            background: #ffffff;
             color: #777;
             padding: 15px;
             border-radius: 20px 20px 0 0;
@@ -216,8 +217,8 @@
 
         /* Footer Logo Styling */
         .footer-logo {
-            margin-top: 5px; /* Reduced margin */
-            max-width: 40px; /* Reduced size */
+            margin-top: 5px;
+            max-width: 40px;
         }
 
         @media (max-width: 768px) {
@@ -243,7 +244,7 @@
 
             /* Footer Logo Responsive */
             .footer-logo {
-                max-width: 30px; /* Reduced size on mobile */
+                max-width: 30px;
                 margin-top: 4px;
             }
 
@@ -295,6 +296,7 @@
         <div id="results-section">
             <h2>Assessment Complete</h2>
             <p id="results-message">Processing your data...</p>
+            <p id="detailed-report"></p>
         </div>
     </div>
 
@@ -383,15 +385,36 @@
         function generateReport(predictionResult) {
             console.log('Prediction result:', predictionResult);
             const score = Array.isArray(predictionResult) ? predictionResult[0] : predictionResult;
-            const assessment = score > 0.5 ? 'High risk of Alzheimer\'s' : 'Low risk of Alzheimer\'s';
+            const assessment = score < 0.5 ? 'High risk of Alzheimer\'s' : 'Low risk of Alzheimer\'s';
 
             // Display the assessment
             const resultsMessage = document.getElementById('results-message');
             resultsMessage.textContent = `Assessment Result: ${assessment} (Score: ${score.toFixed(2)})`;
 
+            // Display detailed report
+            const detailedReport = document.getElementById('detailed-report');
+            detailedReport.innerHTML = `
+                <strong>Detailed Analysis:</strong><br>
+                - Total Correct Answers: ${correctCount}<br>
+                - Total Wrong Answers: ${wrongCount}<br>
+                - Average Reaction Time: ${calculateAverageReactionTime()} ms
+            `;
+
             // Show the results section
             const resultsSection = document.getElementById('results-section');
             resultsSection.style.display = 'block';
+        }
+
+        // Calculate average reaction time
+        function calculateAverageReactionTime() {
+            const reactionTimes = trials
+                .filter(trial => trial.reactionTime !== null)
+                .map(trial => trial.reactionTime);
+
+            if (reactionTimes.length === 0) return 'N/A';
+
+            const sum = reactionTimes.reduce((acc, time) => acc + time, 0);
+            return (sum / reactionTimes.length).toFixed(2);
         }
 
         // Existing JavaScript code
@@ -451,13 +474,13 @@
 
             // Start Button Event Listener
             startButton.addEventListener('click', function () {
-                console.log('Start Button Clicked'); // Debugging statement
+                console.log('Start Button Clicked');
                 startButton.style.display = 'none';
-                taskContainer.style.display = 'grid'; // Show task container with grid layout
+                taskContainer.style.display = 'grid';
                 startCamera()
                     .then(() => {
                         calibrationMessage.textContent = 'Camera started. Preparing to start the task...';
-                        setTimeout(startNextTrial, 2000); // Start with the first visual search trial after 2 seconds
+                        setTimeout(startNextTrial, 2000);
                     })
                     .catch(error => {
                         console.error('Error starting camera:', error);
@@ -509,28 +532,27 @@
             function createSearchTask(taskType, numberOfRings, trialIndex) {
                 taskContainer.innerHTML = '';
                 const targetPosition = Math.floor(Math.random() * numberOfRings);
-                targetPositions[trialIndex] = targetPosition; // Store target position for accuracy
+                targetPositions[trialIndex] = targetPosition;
 
                 for (let i = 0; i < numberOfRings; i++) {
                     const ring = document.createElement('div');
                     ring.classList.add('ring');
 
                     if (taskType === 'serial' || taskType === 'popout') {
-                        // All distractors point upward, one target points downward
                         if (i === targetPosition) {
-                            ring.textContent = '↓'; // Downward for target
+                            ring.textContent = '↓';
                         } else {
-                            ring.textContent = '↑'; // Upward for distractors
+                            ring.textContent = '↑';
                         }
                     }
 
                     // Accessibility Enhancements
-                    ring.setAttribute('tabindex', '0'); // Make ring focusable
+                    ring.setAttribute('tabindex', '0');
                     ring.setAttribute('aria-label', isTarget(i, targetPosition) ? 'Target ring. Click to select.' : 'Distractor ring. Click if this is the target.');
 
                     taskContainer.appendChild(ring);
                     ring.addEventListener('click', onRingClick.bind(null, i === targetPosition, trialIndex, ring));
-                    ring.addEventListener('keypress', function(e) {
+                    ring.addEventListener('keypress', function (e) {
                         if (e.key === 'Enter' || e.key === ' ') {
                             ring.click();
                         }
@@ -545,7 +567,7 @@
 
             // Handle Ring Click
             function onRingClick(isTarget, trialIndex, ringElement) {
-                console.log(`Ring clicked: Target=${isTarget}`); // Debugging statement
+                console.log(`Ring clicked: Target=${isTarget}`);
                 if (isTarget) {
                     clearTimeout(timer);
                     const reactionTime = Date.now() - trialStartTime;
@@ -559,9 +581,9 @@
 
                     // Store trial data
                     trials[trialIndex].reactionTime = reactionTime;
-                    trials[trialIndex].gazeData = gazeData.slice(); // Copy current gaze data
-                    allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
-                    gazeData = []; // Reset for next trial
+                    trials[trialIndex].gazeData = gazeData.slice();
+                    allGazeData = allGazeData.concat(gazeData);
+                    gazeData = [];
 
                     // Proceed to next trial automatically after a short delay
                     setTimeout(() => {
@@ -577,10 +599,10 @@
                     ringElement.classList.add('incorrect');
 
                     // Store trial data with incorrect flag
-                    trials[trialIndex].reactionTime = null; // No reaction time for incorrect
-                    trials[trialIndex].gazeData = gazeData.slice(); // Copy current gaze data
-                    allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
-                    gazeData = []; // Reset for next trial
+                    trials[trialIndex].reactionTime = null;
+                    trials[trialIndex].gazeData = gazeData.slice();
+                    allGazeData = allGazeData.concat(gazeData);
+                    gazeData = [];
 
                     // Proceed to next trial automatically after a short delay
                     setTimeout(() => {
@@ -596,9 +618,9 @@
 
                     // Store trial data with null reaction time
                     trials[trialIndex].reactionTime = null;
-                    trials[trialIndex].gazeData = gazeData.slice(); // Copy current gaze data
-                    allGazeData = allGazeData.concat(gazeData); // Aggregate all gaze data
-                    gazeData = []; // Reset for next trial
+                    trials[trialIndex].gazeData = gazeData.slice();
+                    allGazeData = allGazeData.concat(gazeData);
+                    gazeData = [];
 
                     // Proceed to next trial automatically after a short delay
                     setTimeout(() => {
@@ -669,7 +691,7 @@
                     x: data.x,
                     y: data.y,
                     timestamp: elapsedTime,
-                    pupilSize: data.pupil || null // Assuming WebGazer provides pupil size
+                    pupilSize: data.pupil || null
                 });
             }).begin();
 
