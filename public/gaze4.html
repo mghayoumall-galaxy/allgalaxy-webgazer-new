@@ -318,18 +318,29 @@
 
         // Preprocess gaze data for prediction
         function preprocessGazeData(gazeData) {
-            // Flatten the gaze data to a 1D array
-            const flattenedData = gazeData.reduce((acc, point) => {
-                acc.push(point.x, point.y);
-                return acc;
-            }, []);
+            if (gazeData.length === 0) {
+                console.error('No gaze data collected.');
+                return null;
+            }
 
-            // Normalize the data if necessary
-            // For example, scale between 0 and 1
-            const normalizedData = normalizeArray(flattenedData);
+            // Extract x and y coordinates
+            const xs = gazeData.map(point => point.x);
+            const ys = gazeData.map(point => point.y);
 
-            // Convert to tensor
-            const inputTensor = tf.tensor([normalizedData]);
+            // Normalize coordinates
+            const normalizedXs = normalizeArray(xs);
+            const normalizedYs = normalizeArray(ys);
+
+            // Combine normalized coordinates
+            const features = normalizedXs.map((x, i) => [x, normalizedYs[i]]);
+
+            // Flatten features to 1D array
+            const flattenedFeatures = features.flat();
+
+            // Convert to tensor and adjust shape as required by your model
+            const inputTensor = tf.tensor([flattenedFeatures]);
+
+            console.log('Input tensor shape:', inputTensor.shape);
 
             return inputTensor;
         }
@@ -338,29 +349,40 @@
         function normalizeArray(arr) {
             const max = Math.max(...arr);
             const min = Math.min(...arr);
-            return arr.map(value => (value - min) / (max - min));
+            return arr.map(value => (value - min) / (max - min || 1));
         }
 
         // Make prediction using the model
         async function makePrediction(gazeData) {
             const inputTensor = preprocessGazeData(gazeData);
 
-            // Make prediction
-            const prediction = await model.executeAsync(inputTensor);
+            if (!inputTensor) {
+                console.error('Input tensor is null. Cannot make prediction.');
+                return [0]; // Default prediction or handle accordingly
+            }
 
-            // Get the prediction result
-            const result = prediction.dataSync();
+            try {
+                // Make prediction
+                const prediction = await model.executeAsync(inputTensor);
 
-            // Dispose tensors
-            inputTensor.dispose();
-            prediction.dispose();
+                // Get the prediction result
+                const result = prediction.dataSync();
 
-            return result;
+                // Dispose tensors
+                inputTensor.dispose();
+                prediction.dispose();
+
+                return result;
+            } catch (error) {
+                console.error('Error during model prediction:', error);
+                return [0]; // Handle error scenario
+            }
         }
 
         // Generate report based on prediction result
         function generateReport(predictionResult) {
-            const score = predictionResult[0];
+            console.log('Prediction result:', predictionResult);
+            const score = Array.isArray(predictionResult) ? predictionResult[0] : predictionResult;
             const assessment = score > 0.5 ? 'High risk of Alzheimer\'s' : 'Low risk of Alzheimer\'s';
 
             // Display the assessment
@@ -613,11 +635,19 @@
                 resultsSection.style.display = 'block';
                 resultsMessage.textContent = 'Processing your data...';
 
-                // Make predictions for tasks 1 and 2
-                const predictionResult = await makePrediction(allGazeData);
+                // Log gaze data length
+                console.log('Total gaze data points collected:', allGazeData.length);
 
-                // Use the prediction result to generate reports
-                generateReport(predictionResult);
+                // Make predictions for tasks 1 and 2
+                try {
+                    console.log('Making prediction with gaze data:', allGazeData);
+                    const predictionResult = await makePrediction(allGazeData);
+                    console.log('Prediction result:', predictionResult);
+                    generateReport(predictionResult);
+                } catch (error) {
+                    console.error('Error during prediction:', error);
+                    resultsMessage.textContent = 'An error occurred while processing your data.';
+                }
             }
 
             // Shuffle array in-place using Fisher-Yates algorithm
