@@ -308,11 +308,14 @@
     <script>
         // Load the TensorFlow.js model
         let model;
+        let modelInputShape;
 
         async function loadModel() {
             try {
                 model = await tf.loadLayersModel('model/model.json');
                 console.log('Model loaded successfully.');
+                modelInputShape = model.inputs[0].shape; // [null, requiredLength]
+                console.log('Model input shape:', modelInputShape);
             } catch (error) {
                 console.error('Error loading the model:', error);
             }
@@ -325,24 +328,32 @@
                 return null;
             }
 
-            // Extract x and y coordinates
-            const xs = gazeData.map(point => point.x);
-            const ys = gazeData.map(point => point.y);
+            // Create an array of [x, y] pairs
+            const featuresArray = gazeData.map(point => [point.x, point.y]);
 
-            // Convert to Float32Array
-            const xsArray = new Float32Array(xs);
-            const ysArray = new Float32Array(ys);
-
-            // Stack xs and ys together to create a 2D tensor
-            const features = tf.stack([xsArray, ysArray], 1);
+            // Convert to tensor
+            let features = tf.tensor2d(featuresArray);
 
             // Normalize features
-            const normalizedFeatures = normalizeFeatures(features);
+            let normalizedFeatures = normalizeFeatures(features);
 
             // Flatten features to 1D array
-            const flattenedFeatures = normalizedFeatures.flatten();
+            let flattenedFeatures = normalizedFeatures.flatten();
 
             // Adjust the input tensor shape as required by your model
+            // Ensure that the input tensor has the required length
+            const requiredLength = modelInputShape[1]; // Assuming shape is [null, requiredLength]
+            const currentLength = flattenedFeatures.shape[0];
+
+            if (currentLength < requiredLength) {
+                // Pad with zeros
+                const padding = tf.zeros([requiredLength - currentLength]);
+                flattenedFeatures = flattenedFeatures.concat(padding);
+            } else if (currentLength > requiredLength) {
+                // Truncate
+                flattenedFeatures = flattenedFeatures.slice([0], [requiredLength]);
+            }
+
             const inputTensor = flattenedFeatures.expandDims(0);
 
             console.log('Input tensor shape:', inputTensor.shape);
@@ -368,6 +379,9 @@
             }
 
             try {
+                console.log('Input tensor shape:', inputTensor.shape);
+                console.log('Model input shape:', modelInputShape);
+
                 // Make prediction
                 const prediction = model.predict(inputTensor);
 
