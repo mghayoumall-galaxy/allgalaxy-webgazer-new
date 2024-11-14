@@ -22,9 +22,9 @@
             flex-direction: column;
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #ffffff; /* White background */
+            background-color: #ffffff;
             color: #333;
-            overflow: hidden; /* Prevent scrolling */
+            overflow: hidden;
         }
 
         /* Container for Main Content */
@@ -35,12 +35,12 @@
             margin: 0 auto;
             text-align: center;
             padding: 20px;
-            background-color: #ffffff; /* White background */
+            background-color: #ffffff;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            overflow: hidden; /* Prevents content from spilling over */
+            overflow: hidden;
         }
 
         /* Header Styling */
@@ -311,7 +311,7 @@
 
         async function loadModel() {
             try {
-                model = await tf.loadGraphModel('model/model.json');
+                model = await tf.loadLayersModel('model/model.json');
                 console.log('Model loaded successfully.');
             } catch (error) {
                 console.error('Error loading the model:', error);
@@ -329,29 +329,33 @@
             const xs = gazeData.map(point => point.x);
             const ys = gazeData.map(point => point.y);
 
-            // Normalize coordinates
-            const normalizedXs = normalizeArray(xs);
-            const normalizedYs = normalizeArray(ys);
+            // Convert to Float32Array
+            const xsArray = new Float32Array(xs);
+            const ysArray = new Float32Array(ys);
 
-            // Combine normalized coordinates
-            const features = normalizedXs.map((x, i) => [x, normalizedYs[i]]);
+            // Stack xs and ys together to create a 2D tensor
+            const features = tf.stack([xsArray, ysArray], 1);
+
+            // Normalize features
+            const normalizedFeatures = normalizeFeatures(features);
 
             // Flatten features to 1D array
-            const flattenedFeatures = features.flat();
+            const flattenedFeatures = normalizedFeatures.flatten();
 
-            // Convert to tensor and adjust shape as required by your model
-            const inputTensor = tf.tensor([flattenedFeatures]);
+            // Adjust the input tensor shape as required by your model
+            const inputTensor = flattenedFeatures.expandDims(0);
 
             console.log('Input tensor shape:', inputTensor.shape);
 
             return inputTensor;
         }
 
-        // Normalize array values between 0 and 1
-        function normalizeArray(arr) {
-            const max = Math.max(...arr);
-            const min = Math.min(...arr);
-            return arr.map(value => (value - min) / (max - min || 1));
+        // Normalize features
+        function normalizeFeatures(features) {
+            const min = features.min(0);
+            const max = features.max(0);
+            const normalized = features.sub(min).div(max.sub(min).add(tf.scalar(1e-5)));
+            return normalized;
         }
 
         // Make prediction using the model
@@ -360,15 +364,15 @@
 
             if (!inputTensor) {
                 console.error('Input tensor is null. Cannot make prediction.');
-                return [0]; // Default prediction or handle accordingly
+                throw new Error('Invalid input tensor.');
             }
 
             try {
                 // Make prediction
-                const prediction = await model.executeAsync(inputTensor);
+                const prediction = model.predict(inputTensor);
 
                 // Get the prediction result
-                const result = prediction.dataSync();
+                const result = await prediction.data();
 
                 // Dispose tensors
                 inputTensor.dispose();
@@ -377,7 +381,7 @@
                 return result;
             } catch (error) {
                 console.error('Error during model prediction:', error);
-                return [0]; // Handle error scenario
+                throw error;
             }
         }
 
@@ -417,7 +421,6 @@
             return (sum / reactionTimes.length).toFixed(2);
         }
 
-        // Existing JavaScript code
         document.addEventListener('DOMContentLoaded', async function () {
             await loadModel();
             // DOM Elements
@@ -432,9 +435,9 @@
 
             // Configuration
             const searchTimeLimit = 60000; // 60 seconds per search trial
-            let trialPointer = 0; // Pointer to track current trial
+            let trialPointer = 0;
             let trials = [];
-            let targetPositions = []; // To store target positions for accuracy calculation
+            let targetPositions = [];
 
             // Counters for correct and wrong answers
             let correctCount = 0;
